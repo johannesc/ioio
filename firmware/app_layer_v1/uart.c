@@ -106,7 +106,8 @@ static void UARTConfigInternal(int uart_num, int rate, int speed4x, int two_stop
     Set_URXIF[uart_num](0);  // clear RX int.
     Set_UTXIF[uart_num](0);  // clear TX int.
     Set_URXIE[uart_num](1);  // enable RX int.
-    regs->uxmode = 0x8000 | (speed4x ? 0x0008 : 0x0000) | two_stop_bits | (parity << 1);  // enable
+#define INVERT_RX 0x10
+    regs->uxmode = 0x8000 | INVERT_RX | (speed4x ? 0x0008 : 0x0000) | two_stop_bits | (parity << 1);  // enable
     regs->uxsta = 0x8400;  // IRQ when TX buffer is empty, enable TX, IRQ when character received.
     uart->num_tx_since_last_report = TX_BUF_SIZE;
   } else {
