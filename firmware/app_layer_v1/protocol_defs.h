@@ -392,6 +392,12 @@ typedef struct PACKED {
   BYTE enable : 1;
 } SET_CAPSENSE_SAMPLING_ARGS;
 
+// set button mask
+typedef struct PACKED {
+  BYTE left_button_mask;
+  BYTE right_button_mask;
+} IND_SET_BUTTON_MASK_ARGS;
+
 // BOOKMARK(add_feature): Add a struct for the new incoming / outgoing message
 // arguments.
 
@@ -429,6 +435,7 @@ typedef struct PACKED {
     SOFT_CLOSE_ARGS                          soft_close;
     SET_PIN_CAPSENSE_ARGS                    set_pin_capsense;
     SET_CAPSENSE_SAMPLING_ARGS               set_capsense_sampling;
+    IND_SET_BUTTON_MASK_ARGS                 ind_set_button_mask;
     // BOOKMARK(add_feature): Add argument struct to the union.
   } args;
   BYTE __vabuf[64];  // buffer for var args. never access directly!
@@ -525,6 +532,7 @@ typedef enum {
   SET_PIN_CAPSENSE                    = 0x1E,
   CAPSENSE_REPORT                     = 0x1E,
   SET_CAPSENSE_SAMPLING               = 0x1F,
+  IND_SET_BUTTON_MASK                 = 0x20,
 
   // BOOKMARK(add_feature): Add new message type to enum.
   MESSAGE_TYPE_LIMIT

@@ -32,6 +32,15 @@
 
 #include "GenericTypeDefs.h"
 
+#define IND_BUTTON_PIN 19
+#define IND_LEFT_STCP_PIN 46
+#define IND_LEFT_SHCP_PIN 49
+#define IND_LEFT_DS_PIN 50
+
+#define IND_RIGHT_STCP_PIN 51
+#define IND_RIGHT_SHCP_PIN 52
+#define IND_RIGHT_DS_PIN 53
+
 void SetPinDigitalOut(int pin, int value, int open_drain);
 void SetPinDigitalIn(int pin, int pull);
 void SetPinAnalogIn(int pin);
@@ -43,6 +52,7 @@ void SetPinInCap(int pin, int incap_num, int enable);
 void HardReset();
 void SoftReset();
 void CheckInterface(BYTE interface_id[8]);
-
+void IndSetButtonMask(BYTE left_button_mask, BYTE right_button_mask);
+void IndHandlePinChange(BYTE pin, BYTE value);
 
 #endif  // __FEATURES_H__

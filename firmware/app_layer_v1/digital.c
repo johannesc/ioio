@@ -33,6 +33,7 @@
 #include "pins.h"
 #include "protocol.h"
 #include "sync.h"
+#include "features.h"
 
 void SetDigitalOutLevel(int pin, int value) {
   log_printf("SetDigitalOutLevel(%d, %d)", pin, value);
@@ -58,11 +59,23 @@ void SetChangeNotify(int pin, int changeNotify) {
 static void SendDigitalInStatusMessage(int pin, int value) {
   log_printf("SendDigitalInStatusMessage(%d, %d)", pin, value);
   SAVE_PIN_FOR_LOG(pin);
-  OUTGOING_MESSAGE msg;
-  msg.type = REPORT_DIGITAL_IN_STATUS;
-  msg.args.report_digital_in_status.pin = pin;
-  msg.args.report_digital_in_status.level = value;
-  AppProtocolSendMessage(&msg);
+  switch (pin) {
+      case IND_LEFT_STCP_PIN:
+      case IND_LEFT_SHCP_PIN:
+      case IND_RIGHT_STCP_PIN:
+      case IND_RIGHT_SHCP_PIN:
+          IndHandlePinChange(pin, value);
+          break;
+      default:
+      {
+          OUTGOING_MESSAGE msg;
+          msg.type = REPORT_DIGITAL_IN_STATUS;
+          msg.args.report_digital_in_status.pin = pin;
+          msg.args.report_digital_in_status.level = value;
+          AppProtocolSendMessage(&msg);
+          break;
+      }
+  }
 }
 
 #define CHECK_PORT_CHANGE(name)                                        \
