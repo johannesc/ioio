@@ -33,13 +33,12 @@
 #include "GenericTypeDefs.h"
 
 #define IND_BUTTON_PIN 19
-#define IND_LEFT_STCP_PIN 46
-#define IND_LEFT_SHCP_PIN 49
-#define IND_LEFT_DS_PIN 50
 
-#define IND_RIGHT_STCP_PIN 51
-#define IND_RIGHT_SHCP_PIN 52
-#define IND_RIGHT_DS_PIN 53
+#define IND_LEFT_Q0_PIN 13 //RD4
+#define IND_LEFT_Q1_PIN 12 //RD3
+#define IND_LEFT_Q2_PIN 11 //RD2
+
+#define IND_LEFT_STCP_PIN 18 //RF1
 
 void SetPinDigitalOut(int pin, int value, int open_drain);
 void SetPinDigitalIn(int pin, int pull);

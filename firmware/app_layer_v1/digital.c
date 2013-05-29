@@ -36,7 +36,7 @@
 #include "features.h"
 
 void SetDigitalOutLevel(int pin, int value) {
-  log_printf("SetDigitalOutLevel(%d, %d)", pin, value);
+  log_printf_int("SetDigitalOutLevel(%d, %d)", pin, value);
   SAVE_PIN_FOR_LOG(pin);
   BYTE prev = SyncInterruptLevel(4);
   PinSetLat(pin, value);
@@ -57,13 +57,10 @@ void SetChangeNotify(int pin, int changeNotify) {
 }
 
 static void SendDigitalInStatusMessage(int pin, int value) {
-  log_printf("SendDigitalInStatusMessage(%d, %d)", pin, value);
+  log_printf_int("SendDigitalInStatusMessage(%d, %d)", pin, value);
   SAVE_PIN_FOR_LOG(pin);
   switch (pin) {
       case IND_LEFT_STCP_PIN:
-      case IND_LEFT_SHCP_PIN:
-      case IND_RIGHT_STCP_PIN:
-      case IND_RIGHT_SHCP_PIN:
           IndHandlePinChange(pin, value);
           break;
       default:
@@ -99,7 +96,7 @@ static void SendDigitalInStatusMessage(int pin, int value) {
 
 void __attribute__((__interrupt__, auto_psv)) _CNInterrupt() {
   _CNIF = 0;
-  log_printf("_CNInterrupt()");
+  log_printf_int("_CNInterrupt()");
 
   CHECK_PORT_CHANGE(B);
   CHECK_PORT_CHANGE(C);

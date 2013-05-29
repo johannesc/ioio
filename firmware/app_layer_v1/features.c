@@ -261,9 +261,7 @@ void CheckInterface(BYTE interface_id[8]) {
 
 // Induction code, should really be in another file
 BYTE left_shift_register;
-BYTE left_shift_register_storage;
 BYTE right_shift_register;
-BYTE right_shift_register_storage;
 
 BYTE left_button_mask;
 BYTE right_button_mask;
@@ -272,66 +270,41 @@ void IndInit() {
   left_button_mask = 0;
   right_button_mask = 0;
   left_shift_register = 0;
-  left_shift_register_storage = 0;
   right_shift_register = 0;
-  right_shift_register_storage = 0;
 
   SetPinDigitalOut(IND_BUTTON_PIN, 0, 0);  // Button pin: output, not open drain, 0 = off
-  // Input pins, pull down
-  SetPinDigitalIn(IND_LEFT_STCP_PIN, 2);
-  SetPinDigitalIn(IND_LEFT_SHCP_PIN, 2);
-  SetPinDigitalIn(IND_LEFT_DS_PIN, 2);
-  SetPinDigitalIn(IND_RIGHT_STCP_PIN, 2);
-  SetPinDigitalIn(IND_RIGHT_SHCP_PIN, 2);
-  SetPinDigitalIn(IND_RIGHT_DS_PIN, 2);
+ // Input pins, pull down
 
   SetChangeNotify(IND_LEFT_STCP_PIN, 1);
-  SetChangeNotify(IND_LEFT_SHCP_PIN, 1);
-  SetChangeNotify(IND_RIGHT_STCP_PIN, 1);
-  SetChangeNotify(IND_RIGHT_SHCP_PIN, 1);
+}
+
+static inline void updateOutputPin() {
+  if ((left_shift_register & left_button_mask) ||
+      (right_shift_register & right_button_mask)) {
+      SetDigitalOutLevel(IND_BUTTON_PIN, 1);
+  } else {
+      SetDigitalOutLevel(IND_BUTTON_PIN, 0);
+  }
 }
 
 void IndSetButtonMask(BYTE new_left_button_mask, BYTE new_right_button_mask) {
+  log_printf("IndSetButtonMask(left=0x%x, right=0x%x)",
+          new_left_button_mask, new_right_button_mask);
   left_button_mask = new_left_button_mask;
-  left_button_mask = new_right_button_mask;
+  right_button_mask = new_right_button_mask;
+  updateOutputPin();
 }
 
 void IndHandlePinChange(BYTE pin, BYTE value) {
-  //We are "emulating" 2 74HC595, but with all pins inverted, so we only care
-  //about negative flank changes. Also note that the DS line is inverted.
+  // Positive flank to 74H595 STCP
   if (value) {
       return;
   }
-  BYTE ds;
-
   switch (pin) {
     case IND_LEFT_STCP_PIN:
-      //STCP, negative flank = store value
-      left_shift_register_storage = left_shift_register;
-      if (left_shift_register_storage & left_button_mask) {
-          SetDigitalOutLevel(IND_BUTTON_PIN, 1);
-      } else {
-          SetDigitalOutLevel(IND_BUTTON_PIN, 0);
-      }
-      break;
-    case IND_LEFT_SHCP_PIN:
-      left_shift_register = left_shift_register >> 1;
-      ds = PinGetPort(IND_LEFT_DS_PIN) ? 0 : 1;
-      left_shift_register |= ds;
-      break;
-    case IND_RIGHT_STCP_PIN:
-      right_shift_register_storage = right_shift_register;
-      if (right_shift_register_storage & right_button_mask) {
-          SetDigitalOutLevel(IND_BUTTON_PIN, 1);
-      } else {
-          SetDigitalOutLevel(IND_BUTTON_PIN, 0);
-      }
-      break;
-    case IND_RIGHT_SHCP_PIN:
-      right_shift_register = left_shift_register >> 1;
-      ds = PinGetPort(IND_RIGHT_DS_PIN) ? 0 : 1;
-      right_shift_register |=  ds;
-      break;
+      int value = PORTD;
+      BYTE realValue = ((value & 0x0010) >> 4) | ((value & 0x0008) >> 3) | ((value & 0x0004) >> 2);
+      left_shift_register = (0x01 << (realValue));
     default:
       // Hmm, we should never get here!
       break;

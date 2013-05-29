@@ -506,7 +506,9 @@ static BOOL MessageDone() {
       break;
 
     case IND_SET_BUTTON_MASK:
-      log_printf("Setting button mask to 0x%X", rx_msg.args.ind_set_button_mask);
+      log_printf("Setting button mask to 0x%X, 0x%X",
+              rx_msg.args.ind_set_button_mask.left_button_mask,
+              rx_msg.args.ind_set_button_mask.right_button_mask);
       IndSetButtonMask(rx_msg.args.ind_set_button_mask.left_button_mask,
                        rx_msg.args.ind_set_button_mask.right_button_mask);
       break;
