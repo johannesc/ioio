@@ -1,17 +1,17 @@
 /*
  * Copyright 2011 Ytai Ben-Tsvi. All rights reserved.
- *  
- * 
+ *
+ *
  * Redistribution and use in source and binary forms, with or without modification, are
  * permitted provided that the following conditions are met:
- * 
+ *
  *    1. Redistributions of source code must retain the above copyright notice, this list of
  *       conditions and the following disclaimer.
- * 
+ *
  *    2. Redistributions in binary form must reproduce the above copyright notice, this list
  *       of conditions and the following disclaimer in the documentation and/or other materials
  *       provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
  * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ARSHAN POURSOHI OR
@@ -21,7 +21,7 @@
  * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * The views and conclusions contained in the software and documentation are those of the
  * authors and should not be interpreted as representing official policies, either expressed
  * or implied.
@@ -95,7 +95,7 @@ class IOIOProtocol {
 	static final int SET_PIN_CAPSENSE                    = 0x1E;
 	static final int CAPSENSE_REPORT                     = 0x1E;
 	static final int SET_CAPSENSE_SAMPLING               = 0x1F;
-
+	static final int IND_SET_BUTTON_MASK                 = 0x20;
 	static final int[] SCALE_DIV = new int[] {
 		0x1F,  // 31.25
 		0x1E,  // 35.714
@@ -138,7 +138,7 @@ class IOIOProtocol {
 		}
 	}
 
-	private byte[] outbuf_ = new byte[256];
+	private final byte[] outbuf_ = new byte[256];
 	private int pos_ = 0;
 	private int batchCounter_ = 0;
 
@@ -151,11 +151,11 @@ class IOIOProtocol {
 		//Log.v(TAG, "sending: 0x" + Integer.toHexString(b));
 		outbuf_[pos_++] = (byte) b;
 	}
-	
+
 	public synchronized void beginBatch() {
 		++batchCounter_;
 	}
-	
+
 	public synchronized void endBatch() throws IOException {
 		if (--batchCounter_ == 0) {
 			flush();
@@ -497,7 +497,7 @@ class IOIOProtocol {
 		writeByte(ICSP_REGOUT);
 		endBatch();
 	}
-	
+
 	synchronized public void setPinCapSense(int pinNum) throws IOException {
 		beginBatch();
 		writeByte(SET_PIN_CAPSENSE);
@@ -509,6 +509,14 @@ class IOIOProtocol {
 		beginBatch();
 		writeByte(SET_CAPSENSE_SAMPLING);
 		writeByte((pinNum & 0x3F) | (enable ? 0x80 : 0x00));
+		endBatch();
+	}
+
+	synchronized public void setInductionButtonMask(byte leftMask, byte rightMask) throws IOException {
+		beginBatch();
+		writeByte(IND_SET_BUTTON_MASK);
+		writeByte(leftMask);
+		writeByte(rightMask);
 		endBatch();
 	}
 
@@ -574,22 +582,22 @@ class IOIOProtocol {
 		public void handleIncapClose(int incapNum);
 
 		public void handleIncapOpen(int incapNum);
-		
+
 		public void handleCapSenseReport(int pinNum, int value);
-		
+
 		public void handleSetCapSenseSampling(int pinNum, boolean enable);
 	}
 
 	class IncomingThread extends Thread {
 		private int readOffset_ = 0;
 		private int validBytes_ = 0;
-		private byte[] inbuf_ = new byte[64];
+		private final byte[] inbuf_ = new byte[64];
 
-		private List<Integer> analogPinValues_ = new ArrayList<Integer>();
+		private final List<Integer> analogPinValues_ = new ArrayList<Integer>();
 		private List<Integer> analogFramePins_ = new ArrayList<Integer>();
 		private List<Integer> newFramePins_ = new ArrayList<Integer>();
-		private Set<Integer> removedPins_ = new HashSet<Integer>();
-		private Set<Integer> addedPins_ = new HashSet<Integer>();
+		private final Set<Integer> removedPins_ = new HashSet<Integer>();
+		private final Set<Integer> addedPins_ = new HashSet<Integer>();
 
 		private void calculateAnalogFrameDelta() {
 			removedPins_.clear();
@@ -827,7 +835,7 @@ class IOIOProtocol {
 							handler_.handleIcspClose();
 						}
 						break;
-						
+
 					case INCAP_STATUS:
 						arg1 = readByte();
 						if ((arg1 & 0x80) != 0) {
@@ -836,7 +844,7 @@ class IOIOProtocol {
 							handler_.handleIncapClose(arg1 & 0x0F);
 						}
 						break;
-						
+
 					case INCAP_REPORT:
 						arg1 = readByte();
 						size = arg1 >> 6;
@@ -850,14 +858,14 @@ class IOIOProtocol {
 					case SOFT_CLOSE:
 						Log.d(TAG, "Received soft close.");
 						throw new IOException("Soft close");
-						
+
 					case CAPSENSE_REPORT:
 						arg1 = readByte();
 						arg2 = readByte();
 						handler_.handleCapSenseReport(arg1 & 0x3F, (arg1 >> 6)
 								| (arg2 << 2));
 						break;
-						
+
 					case SET_CAPSENSE_SAMPLING:
 						arg1 = readByte();
 						handler_.handleSetCapSenseSampling(arg1 & 0x3F, (arg1 & 0x80) != 0);

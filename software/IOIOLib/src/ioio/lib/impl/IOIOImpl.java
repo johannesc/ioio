@@ -37,6 +37,7 @@ import ioio.lib.api.DigitalOutput;
 import ioio.lib.api.IOIO;
 import ioio.lib.api.IOIOConnection;
 import ioio.lib.api.IcspMaster;
+import ioio.lib.api.Induction;
 import ioio.lib.api.PulseInput;
 import ioio.lib.api.PulseInput.ClockRate;
 import ioio.lib.api.PulseInput.PulseMode;
@@ -60,8 +61,8 @@ public class IOIOImpl implements IOIO, DisconnectListener {
 	private static final byte[] REQUIRED_INTERFACE_ID = new byte[] { 'I', 'O',
 			'I', 'O', '0', '0', '0', '4' };
 
-	private IOIOConnection connection_;
-	private IncomingState incomingState_ = new IncomingState();
+	private final IOIOConnection connection_;
+	private final IncomingState incomingState_ = new IncomingState();
 	private boolean openPins_[];
 	private boolean openTwi_[];
 	private boolean openIcsp_;
@@ -743,4 +744,9 @@ public class IOIOImpl implements IOIO, DisconnectListener {
 			throw new ConnectionLostException(e);
 		}
 	}
+
+	@Override
+    public Induction openInduction() throws ConnectionLostException {
+		return new InductionImpl(this);
+    }
 }

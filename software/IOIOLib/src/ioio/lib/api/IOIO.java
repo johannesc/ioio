@@ -1,17 +1,17 @@
 /*
  * Copyright 2011 Ytai Ben-Tsvi. All rights reserved.
- *  
- * 
+ *
+ *
  * Redistribution and use in source and binary forms, with or without modification, are
  * permitted provided that the following conditions are met:
- * 
+ *
  *    1. Redistributions of source code must retain the above copyright notice, this list of
  *       conditions and the following disclaimer.
- * 
+ *
  *    2. Redistributions in binary form must reproduce the above copyright notice, this list
  *       of conditions and the following disclaimer in the documentation and/or other materials
  *       provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
  * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ARSHAN POURSOHI OR
@@ -21,7 +21,7 @@
  * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * The views and conclusions contained in the software and documentation are those of the
  * authors and should not be interpreted as representing official policies, either expressed
  * or implied.
@@ -69,7 +69,7 @@ import java.io.Closeable;
  * to the this initial state.
  * <p>
  * Typical usage:
- * 
+ *
  * <pre>
  * IOIO ioio = IOIOFactory.create();
  * try {
@@ -84,7 +84,7 @@ import java.io.Closeable;
  *   ioio.waitForDisconnect();
  * }
  * </pre>
- * 
+ *
  * @see IOIOFactory#create()
  */
 public interface IOIO {
@@ -95,7 +95,7 @@ public interface IOIO {
 
 	/**
 	 * A versioned component in the system.
-	 * 
+	 *
 	 * @see IOIO#getImplVersion(VersionType)
 	 */
 	public enum VersionType {
@@ -129,7 +129,7 @@ public interface IOIO {
 	 * This method is blocking until connection is established. This method can
 	 * be aborted by calling {@link #disconnect()}. In this case, it will throw
 	 * a {@link ConnectionLostException}.
-	 * 
+	 *
 	 * @throws ConnectionLostException
 	 *             An error occurred during connection or disconnect() has been
 	 *             called during connection. The instance state is disconnected.
@@ -161,7 +161,7 @@ public interface IOIO {
 	/**
 	 * Blocks until IOIO has been disconnected and all connection-related
 	 * resources have been freed, so that a new connection can be attempted.
-	 * 
+	 *
 	 * @throws InterruptedException
 	 *             When interrupt() has been called on this thread. This might
 	 *             mean that an immediate attempt to create and connect a new
@@ -173,7 +173,7 @@ public interface IOIO {
 
 	/**
 	 * Gets the connections state.
-	 * 
+	 *
 	 * @return The connection state.
 	 */
 	public State getState();
@@ -185,7 +185,7 @@ public interface IOIO {
 	 * It is equivalent to calling {@link Closeable#close()} on every interface
 	 * obtained from this instance. A connection must have been established
 	 * prior to calling this method, by invoking {@link #waitForConnect()}.
-	 * 
+	 *
 	 * @throws ConnectionLostException
 	 *             Connection was lost before or during the execution of this
 	 *             method.
@@ -200,7 +200,7 @@ public interface IOIO {
 	 * will take place, so firmware upgrades can be performed. A connection must
 	 * have been established prior to calling this method, by invoking
 	 * {@link #waitForConnect()}.
-	 * 
+	 *
 	 * @throws ConnectionLostException
 	 *             Connection was lost before or during the execution of this
 	 *             method.
@@ -214,7 +214,7 @@ public interface IOIO {
 	 * software build. Returned version IDs are always 8-character long,
 	 * according to the IOIO versioning system: first 4 characters are the
 	 * version authority and last 4 characters are the revision.
-	 * 
+	 *
 	 * @param v
 	 *            The component whose version we query.
 	 * @return An 8-character implementation version ID.
@@ -232,7 +232,7 @@ public interface IOIO {
 	 * It is illegal to open a pin that has already been opened and has not been
 	 * closed. A connection must have been established prior to calling this
 	 * method, by invoking {@link #waitForConnect()}.
-	 * 
+	 *
 	 * @param spec
 	 *            Pin specification, consisting of the pin number, as labeled on
 	 *            the board, and the mode, which determines whether the pin will
@@ -249,7 +249,7 @@ public interface IOIO {
 
 	/**
 	 * Shorthand for openDigitalInput(new DigitalInput.Spec(pin)).
-	 * 
+	 *
 	 * @see #openDigitalInput(ioio.lib.api.DigitalInput.Spec)
 	 */
 	public DigitalInput openDigitalInput(int pin)
@@ -257,7 +257,7 @@ public interface IOIO {
 
 	/**
 	 * Shorthand for openDigitalInput(new DigitalInput.Spec(pin, mode)).
-	 * 
+	 *
 	 * @see #openDigitalInput(ioio.lib.api.DigitalInput.Spec)
 	 */
 	public DigitalInput openDigitalInput(int pin, DigitalInput.Spec.Mode mode)
@@ -271,7 +271,7 @@ public interface IOIO {
 	 * interface. It is illegal to open a pin that has already been opened and
 	 * has not been closed. A connection must have been established prior to
 	 * calling this method, by invoking {@link #waitForConnect()}.
-	 * 
+	 *
 	 * @param spec
 	 *            Pin specification, consisting of the pin number, as labeled on
 	 *            the board, and the mode, which determines whether the pin will
@@ -292,7 +292,7 @@ public interface IOIO {
 	/**
 	 * Shorthand for openDigitalOutput(new DigitalOutput.Spec(pin, mode),
 	 * startValue).
-	 * 
+	 *
 	 * @see #openDigitalOutput(ioio.lib.api.DigitalOutput.Spec, boolean)
 	 */
 	public DigitalOutput openDigitalOutput(int pin,
@@ -302,7 +302,7 @@ public interface IOIO {
 	/**
 	 * Shorthand for openDigitalOutput(new DigitalOutput.Spec(pin), startValue).
 	 * Pin mode will be "normal" (as opposed to "open-drain".
-	 * 
+	 *
 	 * @see #openDigitalOutput(ioio.lib.api.DigitalOutput.Spec, boolean)
 	 */
 	public DigitalOutput openDigitalOutput(int pin, boolean startValue)
@@ -311,7 +311,7 @@ public interface IOIO {
 	/**
 	 * Shorthand for openDigitalOutput(new DigitalOutput.Spec(pin), false). Pin
 	 * mode will be "normal" (as opposed to "open-drain".
-	 * 
+	 *
 	 * @see #openDigitalOutput(ioio.lib.api.DigitalOutput.Spec, boolean)
 	 */
 	public DigitalOutput openDigitalOutput(int pin)
@@ -328,7 +328,7 @@ public interface IOIO {
 	 * returned interface. It is illegal to open a pin that has already been
 	 * opened and has not been closed. A connection must have been established
 	 * prior to calling this method, by invoking {@link #waitForConnect()}.
-	 * 
+	 *
 	 * @param pin
 	 *            Pin number, as labeled on the board.
 	 * @return Interface of the assigned pin.
@@ -355,7 +355,7 @@ public interface IOIO {
 	 * returned interface. It is illegal to open a pin that has already been
 	 * opened and has not been closed. A connection must have been established
 	 * prior to calling this method, by invoking {@link #waitForConnect()}.
-	 * 
+	 *
 	 * @param spec
 	 *            Pin specification, consisting of the pin number, as labeled on
 	 *            the board, and the mode, which determines whether the pin will
@@ -378,7 +378,7 @@ public interface IOIO {
 
 	/**
 	 * Shorthand for openPwmOutput(new DigitalOutput.Spec(pin), freqHz).
-	 * 
+	 *
 	 * @see #openPwmOutput(ioio.lib.api.DigitalOutput.Spec, int)
 	 */
 	public PwmOutput openPwmOutput(int pin, int freqHz)
@@ -399,7 +399,7 @@ public interface IOIO {
 	 * returned interface. It is illegal to open a pin that has already been
 	 * opened and has not been closed. A connection must have been established
 	 * prior to calling this method, by invoking {@link #waitForConnect()}.
-	 * 
+	 *
 	 * @param spec
 	 *            Pin specification, consisting of the pin number, as labeled on
 	 *            the board, and the mode, which determines whether the pin will
@@ -439,7 +439,7 @@ public interface IOIO {
 	 * Shorthand for openPulseInput(new DigitalInput.Spec(pin), rate, mode,
 	 * true), i.e. opens a double-precision, 16MHz pulse input on the given pin
 	 * with the given mode.
-	 * 
+	 *
 	 * @see #openPulseInput(ioio.lib.api.DigitalInput.Spec,
 	 *      ioio.lib.api.PulseInput.ClockRate,
 	 *      ioio.lib.api.PulseInput.PulseMode, boolean)
@@ -464,7 +464,7 @@ public interface IOIO {
 	 * to use pins that have already been opened and has not been closed. A
 	 * connection must have been established prior to calling this method, by
 	 * invoking {@link #waitForConnect()}.
-	 * 
+	 *
 	 * @param rx
 	 *            Pin specification for the RX pin, consisting of the pin
 	 *            number, as labeled on the board, and the mode, which
@@ -503,7 +503,7 @@ public interface IOIO {
 	 * {@link #openUart(DigitalInput.Spec, DigitalOutput.Spec, int, Uart.Parity, Uart.StopBits)}
 	 * , where the input pins use their default specs. {@link #INVALID_PIN} can
 	 * be used on either pin if a TX- or RX-only UART is needed.
-	 * 
+	 *
 	 * @see #openUart(DigitalInput.Spec, DigitalOutput.Spec, int, Uart.Parity,
 	 *      Uart.StopBits)
 	 */
@@ -530,7 +530,7 @@ public interface IOIO {
 	 * to use pins that have already been opened and has not been closed. A
 	 * connection must have been established prior to calling this method, by
 	 * invoking {@link #waitForConnect()}.
-	 * 
+	 *
 	 * @param miso
 	 *            Pin specification for the MISO (Master In Slave Out) pin,
 	 *            consisting of the pin number, as labeled on the board, and the
@@ -579,7 +579,7 @@ public interface IOIO {
 	 * {@link #openSpiMaster(ioio.lib.api.DigitalInput.Spec, ioio.lib.api.DigitalOutput.Spec, ioio.lib.api.DigitalOutput.Spec, ioio.lib.api.DigitalOutput.Spec[], ioio.lib.api.SpiMaster.Config)}
 	 * , where the pins are all open with the default modes and default
 	 * configuration values are used.
-	 * 
+	 *
 	 * @see #openSpiMaster(ioio.lib.api.DigitalInput.Spec,
 	 *      ioio.lib.api.DigitalOutput.Spec, ioio.lib.api.DigitalOutput.Spec,
 	 *      ioio.lib.api.DigitalOutput.Spec[], ioio.lib.api.SpiMaster.Config)
@@ -594,7 +594,7 @@ public interface IOIO {
 	 * , where the MISO pins is opened with pull up, and the other pins are open
 	 * with the default modes and default configuration values are used. In this
 	 * version, a single slave is used.
-	 * 
+	 *
 	 * @see #openSpiMaster(ioio.lib.api.DigitalInput.Spec,
 	 *      ioio.lib.api.DigitalOutput.Spec, ioio.lib.api.DigitalOutput.Spec,
 	 *      ioio.lib.api.DigitalOutput.Spec[], ioio.lib.api.SpiMaster.Config)
@@ -622,7 +622,7 @@ public interface IOIO {
 	 * to use pins that have already been opened and has not been closed. A
 	 * connection must have been established prior to calling this method, by
 	 * invoking {@link #waitForConnect()}.
-	 * 
+	 *
 	 * @param twiNum
 	 *            The TWI module index to use. Will also determine the pins
 	 *            used.
@@ -654,7 +654,7 @@ public interface IOIO {
 	 * static. Client has to make sure that the ICSP module is not already in
 	 * use, as well as those dedicated pins. See board documentation for the
 	 * actual pins used for ICSP.
-	 * 
+	 *
 	 * @return Interface of the ICSP module.
 	 * @see IcspMaster
 	 * @throws ConnectionLostException
@@ -662,10 +662,10 @@ public interface IOIO {
 	 *             method.
 	 */
 	public IcspMaster openIcspMaster() throws ConnectionLostException;
-	
+
 	/**
 	 * Shorthand for openCapSense(pin, CapSense.DEFAULT_COEF).
-	 * 
+	 *
 	 * @see #openCapSense(int, float)
 	 */
 	public CapSense openCapSense(int pin) throws ConnectionLostException;
@@ -681,7 +681,7 @@ public interface IOIO {
 	 * returned interface. It is illegal to open a pin that has already been
 	 * opened and has not been closed. A connection must have been established
 	 * prior to calling this method, by invoking {@link #waitForConnect()}.
-	 * 
+	 *
 	 * @param pin
 	 *            Pin number, as labeled on the board.
 	 * @return Interface of the assigned pin.
@@ -693,6 +693,8 @@ public interface IOIO {
 	public CapSense openCapSense(int pin, float filterCoef)
 			throws ConnectionLostException;
 
+	public Induction openInduction()
+			throws ConnectionLostException;
 	/**
 	 * Start a batch of operations. This is strictly an optimization and will
 	 * not change functionality: if the client knows that a sequence of several
@@ -708,7 +710,7 @@ public interface IOIO {
 	 * be treated as a hint. Code running inside the block must be quick as it
 	 * blocks <b>all</b> transfers to the IOIO, including those performed from
 	 * other threads.
-	 * 
+	 *
 	 * @throws ConnectionLostException
 	 *             Connection was lost before or during the execution of this
 	 *             method.
@@ -717,7 +719,7 @@ public interface IOIO {
 
 	/**
 	 * End a batch of operations. For explanation, see {@link #beginBatch()}.
-	 * 
+	 *
 	 * @throws ConnectionLostException
 	 *             Connection was lost before or during the execution of this
 	 *             method.
