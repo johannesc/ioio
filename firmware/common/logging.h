@@ -43,6 +43,7 @@
   void log_print_buf(const void* buf, int size);
   #define log_print_0(x) do { UART2PrintString("["__FILE__": "TOSTRING(__LINE__)"] "); UART2PrintString(x); UART2PrintString("\r\n"); } while (0)
   #define log_printf(...) do { sprintf(char_buf, __VA_ARGS__); log_print_0(char_buf); } while(0)
+  #define log_printf_raw(...) do { sprintf(char_buf, __VA_ARGS__); UART2PrintString(char_buf); } while(0)
 #ifndef NO_INTERRUPT_LOGGING
   #define log_printf_int(...) do { sprintf(char_buf, __VA_ARGS__); log_print_0(char_buf); } while(0)
 #else

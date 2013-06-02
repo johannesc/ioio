@@ -273,6 +273,7 @@ void IndInit() {
   right_shift_register = 0;
 
   SetPinDigitalOut(IND_BUTTON_PIN, 0, 0);  // Button pin: output, not open drain, 0 = off
+  SetPinDigitalOut(IND_DBG_PIN, 0, 0);
  // Input pins, pull down
 
   SetChangeNotify(IND_LEFT_STCP_PIN, 1);
@@ -295,16 +296,38 @@ void IndSetButtonMask(BYTE new_left_button_mask, BYTE new_right_button_mask) {
   updateOutputPin();
 }
 
+static int i = 0;
+BYTE set = 0;
+
 void IndHandlePinChange(BYTE pin, BYTE value) {
   // Positive flank to 74H595 STCP
-  if (value) {
+//  SetDigitalOutLevel(IND_DBG_PIN, value);
+  if (!value) {
       return;
   }
   switch (pin) {
     case IND_LEFT_STCP_PIN:
-      int value = PORTD;
-      BYTE realValue = ((value & 0x0010) >> 4) | ((value & 0x0008) >> 3) | ((value & 0x0004) >> 2);
+    {
+//      if (set) {
+//        set = 0;
+//      } else {
+//        set = 1;
+//      }
+//      i++;
+//      BYTE print = 0;
+//      if (i%400 == 0) {
+//          print = 1;
+//      }
+//      SetDigitalOutLevel(IND_DBG2_PIN, set);
+      int shiftReg = PORTD;
+//      if (print) log_printf_raw("sr=0x%X\r\n", shiftReg);
+      BYTE realValue = ((shiftReg & 0x0010) >> 4) | ((shiftReg & 0x0008) >> 2) | (shiftReg & 0x0004);
       left_shift_register = (0x01 << (realValue));
+//      if (print) log_printf_raw("lsr=0x%X\r\n", left_shift_register);
+      SetDigitalOutLevel(IND_DBG_PIN, left_shift_register == 1);
+
+      updateOutputPin();
+    }
     default:
       // Hmm, we should never get here!
       break;

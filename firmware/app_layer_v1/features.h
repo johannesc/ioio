@@ -32,6 +32,8 @@
 
 #include "GenericTypeDefs.h"
 
+#define IND_DBG_PIN 20
+#define IND_DBG2_PIN 21
 #define IND_BUTTON_PIN 19
 
 #define IND_LEFT_Q0_PIN 13 //RD4
