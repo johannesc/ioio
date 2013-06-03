@@ -39,6 +39,7 @@
 #define IND_LEFT_Q0_PIN 13 //RD4
 #define IND_LEFT_Q1_PIN 12 //RD3
 #define IND_LEFT_Q2_PIN 11 //RD2
+#define IND_LEFT_Q3_PIN 10 //RD1
 
 #define IND_LEFT_STCP_PIN 18 //RF1
 

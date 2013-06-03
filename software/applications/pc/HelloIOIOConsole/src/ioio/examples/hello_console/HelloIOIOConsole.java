@@ -47,7 +47,7 @@ public class HelloIOIOConsole extends IOIOConsoleApp {
 				try {
 					int mask = Integer.parseInt(line, 16);
 					rightMask = (byte)( mask & 0xFF);
-					leftMask = (byte)( mask & 0xFF);
+					leftMask = (byte) ((mask & 0xFF00) >> 8);
 					System.out.println(String.format("Right mask is now 0x%x", rightMask));
 					System.out.println(String.format("Left mask is now 0x%x", leftMask));
 				} catch(NumberFormatException e) {
