@@ -15,8 +15,7 @@ import java.io.InputStreamReader;
 
 public class HelloIOIOConsole extends IOIOConsoleApp {
 	private boolean ledOn_ = false;
-	protected byte rightMask = 0x00;
-	protected byte leftMask = 0x00;
+	protected short mask = 0x00;
 
 	// Boilerplate main(). Copy-paste this code into any IOIOapplication.
 	public static void main(String[] args) throws Exception {
@@ -38,18 +37,10 @@ public class HelloIOIOConsole extends IOIOConsoleApp {
 				ledOn_ = false;
 			} else if (line.equals("q")) {
 				abort = true;
-			} else if (line.equals("s")) {
-				rightMask = (byte)( (rightMask << 1) & 0xFF);
-				leftMask = (byte)( (leftMask << 1) & 0xFF);
-				System.out.println(String.format("Right mask is now 0x%x", rightMask));
-				System.out.println(String.format("Left mask is now 0x%x", leftMask));
 			} else {
 				try {
-					int mask = Integer.parseInt(line, 16);
-					rightMask = (byte)( mask & 0xFF);
-					leftMask = (byte) ((mask & 0xFF00) >> 8);
-					System.out.println(String.format("Right mask is now 0x%x", rightMask));
-					System.out.println(String.format("Left mask is now 0x%x", leftMask));
+					mask = (short) (Integer.parseInt(line, 16) & 0xFFFF);
+					System.out.println(String.format("Mask is now 0x%x", mask));
 				} catch(NumberFormatException e) {
 					System.out
 					.println("Unknown input. t=toggle, n=on, f=off, s=shift, XX = set mask, q=quit.");
@@ -63,8 +54,7 @@ public class HelloIOIOConsole extends IOIOConsoleApp {
 		return new BaseIOIOLooper() {
 			private DigitalOutput led_;
 			private Induction induction;
-			private byte lastLeftMask = 0;
-			private byte lastRightMask = 0;
+			private short lastMask = 0;
 			private boolean lastLedOn;
 
 			@Override
@@ -81,10 +71,9 @@ public class HelloIOIOConsole extends IOIOConsoleApp {
 					led_.write(!ledOn_);
 					lastLedOn = ledOn_;
 				}
-				if (lastLeftMask != leftMask || lastRightMask != rightMask) {
-					induction.setInductionButtonMask(leftMask, rightMask);
-					lastLeftMask = leftMask;
-					lastRightMask = rightMask;
+				if (lastMask != mask) {
+					induction.setInductionButtonMask(mask);
+					lastMask = mask;
 				}
 				Thread.sleep(10);
 			}

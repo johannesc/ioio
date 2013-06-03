@@ -54,7 +54,7 @@ void SetPinInCap(int pin, int incap_num, int enable);
 void HardReset();
 void SoftReset();
 void CheckInterface(BYTE interface_id[8]);
-void IndSetButtonMask(BYTE left_button_mask, BYTE right_button_mask);
+void IndSetButtonMask(WORD new_button_mask);
 void IndHandlePinChange(BYTE pin, BYTE value);
 
 #endif  // __FEATURES_H__

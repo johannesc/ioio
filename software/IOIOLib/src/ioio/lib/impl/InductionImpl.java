@@ -40,9 +40,9 @@ class InductionImpl extends AbstractResource implements Induction {
 	}
 
 	@Override
-	synchronized public void setInductionButtonMask(byte leftMask, byte rightMask) throws ConnectionLostException {
+	synchronized public void setInductionButtonMask(short mask) throws ConnectionLostException {
 		try {
-			ioio_.protocol_.setInductionButtonMask(leftMask, rightMask);
+			ioio_.protocol_.setInductionButtonMask(mask);
 		} catch (IOException e) {
 			throw new ConnectionLostException(e);
 		}

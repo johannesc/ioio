@@ -260,39 +260,29 @@ void CheckInterface(BYTE interface_id[8]) {
 }
 
 // Induction code, should really be in another file
-BYTE left_shift_register;
-BOOL left_inh;
+WORD shift_register;
 
-BYTE right_shift_register;
-
-//left_button_mask
-//0x01 = Clock button
-//0x02 = ? (the unused one?)
-//0x04 = Lock
-//0x08 = FL+
-//0x10 = BL-
-//0x20 = BL+
-//0x40 = FL-Power
-//0x80 = FL-
-
-BYTE left_button_mask;
-
-//right_button_mask
-//0x01 = ?
-//0x02 = BR-Power
-//0x04 = BR-
-//0x08 = BR+
-//0x10 = FR-Power
-//0x20 = FR-
-//0x40 = FR+
-//0x80 = BL-Power
-BYTE right_button_mask;
+//0x0001 = ?
+//0x0002 = BR-Power
+//0x0004 = BR-
+//0x0008 = BR+
+//0x0010 = FR-Power
+//0x0020 = FR-
+//0x0040 = FR+
+//0x0080 = BL-Power
+//0x0100 = Clock button
+//0x0200 = ? (the unused one?)
+//0x0400 = Lock
+//0x0800 = FL+
+//0x1000 = BL-
+//0x2000 = BL+
+//0x4000 = FL-Power
+//0x8000 = FL-
+WORD button_mask;
 
 void IndInit() {
-  left_button_mask = 0;
-  right_button_mask = 0;
-  left_shift_register = 0;
-  right_shift_register = 0;
+  button_mask = 0;
+  shift_register = 0;
 
   SetPinDigitalOut(IND_BUTTON_PIN, 0, 0);  // Button pin: output, not open drain, 0 = off
   SetPinDigitalOut(IND_DBG_PIN, 0, 0);
@@ -302,31 +292,20 @@ void IndInit() {
 }
 
 static inline void updateOutputPin() {
-  if (left_inh) {
-    if ((left_shift_register & left_button_mask) && left_inh) {
-      SetDigitalOutLevel(IND_BUTTON_PIN, 1);
-    } else {
-      SetDigitalOutLevel(IND_BUTTON_PIN, 0);
-    }
+  if (shift_register & button_mask) {
+    SetDigitalOutLevel(IND_BUTTON_PIN, 1);
   } else {
-    if ((left_shift_register & right_button_mask)) {
-      SetDigitalOutLevel(IND_BUTTON_PIN, 1);
-    } else {
-      SetDigitalOutLevel(IND_BUTTON_PIN, 0);
-    }
+    SetDigitalOutLevel(IND_BUTTON_PIN, 0);
   }
 }
 
-void IndSetButtonMask(BYTE new_left_button_mask, BYTE new_right_button_mask) {
-  log_printf("IndSetButtonMask(left=0x%x, right=0x%x)",
-          new_left_button_mask, new_right_button_mask);
-  left_button_mask = new_left_button_mask;
-  right_button_mask = new_right_button_mask;
+void IndSetButtonMask(WORD new_button_mask) {
+  log_printf("IndSetButtonMask(new=0x%x)", new_button_mask);
+  button_mask = new_button_mask;
   updateOutputPin();
 }
 
 static int i = 0;
-BYTE set = 0;
 
 void IndHandlePinChange(BYTE pin, BYTE value) {
   // Positive flank to 74H595 STCP
@@ -337,24 +316,23 @@ void IndHandlePinChange(BYTE pin, BYTE value) {
   switch (pin) {
     case IND_LEFT_STCP_PIN:
     {
-//      if (set) {
-//        set = 0;
-//      } else {
-//        set = 1;
-//      }
 //      i++;
 //      BYTE print = 0;
-//      if (i%400 == 0) {
+//      if (i%123 == 0) {
 //          print = 1;
 //      }
-//      SetDigitalOutLevel(IND_DBG2_PIN, set);
       int shiftReg = PORTD;
 //      if (print) log_printf_raw("sr=0x%X\r\n", shiftReg);
       BYTE realValue = ((shiftReg & 0x0010) >> 4) | ((shiftReg & 0x0008) >> 2) | (shiftReg & 0x0004);
-      left_shift_register = (0x01 << (realValue));
-      left_inh = (shiftReg & 0x0002);
-//      if (print) log_printf_raw("lsr=0x%X\r\n", left_shift_register);
-      SetDigitalOutLevel(IND_DBG_PIN, left_shift_register == 1);
+      shift_register = (0x01 << (realValue));
+
+      // Check if left INH is high (=left is active) or low (right is active)
+      if (shiftReg & 0x0002) {
+          //Left active shift another 8 bits left
+          shift_register = shift_register << 8;
+      }
+ //     if (print) log_printf_raw("sr=0x%X, INH=0x%X\r\n", shift_register, shiftReg & 0x0002);
+      SetDigitalOutLevel(IND_DBG_PIN, shift_register == 0x0100);
 
       updateOutputPin();
     }

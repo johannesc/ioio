@@ -394,8 +394,7 @@ typedef struct PACKED {
 
 // set button mask
 typedef struct PACKED {
-  BYTE left_button_mask;
-  BYTE right_button_mask;
+  WORD button_mask;
 } IND_SET_BUTTON_MASK_ARGS;
 
 // BOOKMARK(add_feature): Add a struct for the new incoming / outgoing message

@@ -34,5 +34,5 @@ import ioio.lib.api.exception.ConnectionLostException;
  * Induction control.
  */
 public interface Induction extends Closeable {
-	public void setInductionButtonMask(byte leftMask, byte rightMask) throws ConnectionLostException;
+	public void setInductionButtonMask(short mask) throws ConnectionLostException;
 }

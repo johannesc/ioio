@@ -506,11 +506,7 @@ static BOOL MessageDone() {
       break;
 
     case IND_SET_BUTTON_MASK:
-      log_printf("Setting button mask to 0x%X, 0x%X",
-              rx_msg.args.ind_set_button_mask.left_button_mask,
-              rx_msg.args.ind_set_button_mask.right_button_mask);
-      IndSetButtonMask(rx_msg.args.ind_set_button_mask.left_button_mask,
-                       rx_msg.args.ind_set_button_mask.right_button_mask);
+      IndSetButtonMask(rx_msg.args.ind_set_button_mask.button_mask);
       break;
     // BOOKMARK(add_feature): Add incoming message handling to switch clause.
     // Call Echo() if the message is to be echoed back.

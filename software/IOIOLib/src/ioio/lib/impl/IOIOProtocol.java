@@ -512,11 +512,10 @@ class IOIOProtocol {
 		endBatch();
 	}
 
-	synchronized public void setInductionButtonMask(byte leftMask, byte rightMask) throws IOException {
+	synchronized public void setInductionButtonMask(short mask) throws IOException {
 		beginBatch();
 		writeByte(IND_SET_BUTTON_MASK);
-		writeByte(leftMask);
-		writeByte(rightMask);
+		writeTwoBytes(mask);
 		endBatch();
 	}
 
