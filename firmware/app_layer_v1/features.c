@@ -261,23 +261,23 @@ void CheckInterface(BYTE interface_id[8]) {
 
 // Induction code, should really be in another file
 WORD shift_register;
-
 //0x0001 = ?
-//0x0002 = BR-Power
-//0x0004 = BR-
-//0x0008 = BR+
-//0x0010 = FR-Power
-//0x0020 = FR-
-//0x0040 = FR+
-//0x0080 = BL-Power
-//0x0100 = Clock button
-//0x0200 = ? (the unused one?)
-//0x0400 = Lock
-//0x0800 = FL+
-//0x1000 = BL-
-//0x2000 = BL+
-//0x4000 = FL-Power
-//0x8000 = FL-
+//0x0002 = Clock button
+//0x0004 = RF-Power
+//0x0008 = LB-
+//0x0010 = RB-
+//0x0020 = LOCK
+//0x0040 = RF+
+//0x0080 = LF-Power
+//0x0100 = RB-Power
+//0x0200 = ?
+//0x0400 = RF-
+//0x0800 = LB+
+//0x1000 = RB+
+//0x2000 = LF+
+//0x4000 = LB-Power
+//0x8000 = LF-
+
 WORD button_mask;
 
 void IndInit() {
@@ -288,57 +288,32 @@ void IndInit() {
   SetPinDigitalOut(IND_DBG_PIN, 0, 0);
  // Input pins, pull down
 
-  SetChangeNotify(IND_LEFT_STCP_PIN, 1);
-}
-
-static inline void updateOutputPin() {
-  if (shift_register & button_mask) {
-    SetDigitalOutLevel(IND_BUTTON_PIN, 1);
-  } else {
-    SetDigitalOutLevel(IND_BUTTON_PIN, 0);
-  }
+  //SetChangeNotify(IND_LEFT_STCP_PIN, 1);
+  INTCON2 |= 0x0002; //INT1 at positive edge
+  IFS1bits.INT1IF = 0; //Clear int1 flag
+  IEC1bits.INT1IE = 1; //Enable int1
+  IPC5bits.INT1IP = 7; //Highest priority
+  RPINR0 = 0x1400; //RP20 (IOIO PIN 14) as INT1
 }
 
 void IndSetButtonMask(WORD new_button_mask) {
   log_printf("IndSetButtonMask(new=0x%x)", new_button_mask);
   button_mask = new_button_mask;
-  updateOutputPin();
+  //We don't have to update the output pin here, it is scanned often enough
 }
 
-static int i = 0;
-
-void IndHandlePinChange(BYTE pin, BYTE value) {
+void __attribute__((__interrupt__, auto_psv)) _INT1Interrupt(void)
+{
+  IFS1bits.INT1IF = 0; //Clear the INT1 flag
   // Positive flank to 74H595 STCP
-//  SetDigitalOutLevel(IND_DBG_PIN, value);
-  if (!value) {
-      return;
-  }
-  switch (pin) {
-    case IND_LEFT_STCP_PIN:
-    {
-//      i++;
-//      BYTE print = 0;
-//      if (i%123 == 0) {
-//          print = 1;
-//      }
-      int shiftReg = PORTD;
-//      if (print) log_printf_raw("sr=0x%X\r\n", shiftReg);
-      BYTE realValue = ((shiftReg & 0x0010) >> 4) | ((shiftReg & 0x0008) >> 2) | (shiftReg & 0x0004);
-      shift_register = (0x01 << (realValue));
-
-      // Check if left INH is high (=left is active) or low (right is active)
-      if (shiftReg & 0x0002) {
-          //Left active shift another 8 bits left
-          shift_register = shift_register << 8;
-      }
- //     if (print) log_printf_raw("sr=0x%X, INH=0x%X\r\n", shift_register, shiftReg & 0x0002);
-      SetDigitalOutLevel(IND_DBG_PIN, shift_register == 0x0100);
-
-      updateOutputPin();
-    }
-    default:
-      // Hmm, we should never get here!
-      break;
+  int shiftReg = (PORTD >> 1) & 0x000F;
+  shift_register = 0x01 << shiftReg;
+  // Save some cycles and write direct to the the register
+  // instead of using SetDigitalOutLevel
+  if (shift_register & button_mask) {
+      LATE |= 1;
+  } else {
+      LATE &= ~1;
   }
 }
 

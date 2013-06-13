@@ -34,14 +34,14 @@
 
 #define IND_DBG_PIN 20
 #define IND_DBG2_PIN 21
-#define IND_BUTTON_PIN 19
+#define IND_BUTTON_PIN 19 //RE0
 
-#define IND_LEFT_Q0_PIN 13 //RD4
-#define IND_LEFT_Q1_PIN 12 //RD3
-#define IND_LEFT_Q2_PIN 11 //RD2
-#define IND_LEFT_Q3_PIN 10 //RD1
+#define IND_Q0_PIN 13 //RD4
+#define IND_Q1_PIN 12 //RD3
+#define IND_Q2_PIN 11 //RD2
+#define IND_Q3_PIN 10 //RD1
 
-#define IND_LEFT_STCP_PIN 18 //RF1
+#define IND_STCP_PIN 14 //RD5
 
 void SetPinDigitalOut(int pin, int value, int open_drain);
 void SetPinDigitalIn(int pin, int pull);
@@ -55,6 +55,5 @@ void HardReset();
 void SoftReset();
 void CheckInterface(BYTE interface_id[8]);
 void IndSetButtonMask(WORD new_button_mask);
-void IndHandlePinChange(BYTE pin, BYTE value);
 
 #endif  // __FEATURES_H__
