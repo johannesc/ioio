@@ -60,6 +60,12 @@ class IncomingState implements IncomingHandler {
 		void reportAdditionalBuffer(int bytesToAdd);
 	}
 
+	interface InductionListener {
+		void reportButtonMask(short buttonMask);
+
+		void reportUserPressed(boolean userPressed);
+	}
+
 	class InputPinState {
 		private Queue<InputPinListener> listeners_ = new ConcurrentLinkedQueue<InputPinListener>();
 		private boolean currentOpen_ = false;
@@ -121,6 +127,24 @@ class IncomingState implements IncomingHandler {
 		}
 	}
 
+	class InductionState {
+
+		private InductionListener induction;
+
+		void reportButtonMask(short buttonMask) {
+			induction.reportButtonMask(buttonMask);
+		}
+
+		void setListener(InductionListener induction) {
+			this.induction = induction;
+		}
+
+		public void reportUserPressed(boolean userPressed) {
+			induction.reportUserPressed(userPressed);
+		}
+	}
+
+	private final InductionState inductionState_ = new InductionState();
 	private InputPinState[] intputPinStates_;
 	private DataModuleState[] uartStates_;
 	private DataModuleState[] twiStates_;
@@ -459,7 +483,7 @@ class IncomingState implements IncomingHandler {
 		// logMethod("handleCapSenseReport", pinNum, value);
 		intputPinStates_[pinNum].setValue(value);
 	}
-	
+
 	@Override
 	public void handleSetCapSenseSampling(int pinNum, boolean enable) {
 		// logMethod("handleSetCapSenseSampling", pinNum, enable);
@@ -469,12 +493,26 @@ class IncomingState implements IncomingHandler {
 			intputPinStates_[pinNum].closeCurrentListener();
 		}
 	}
-	
+
 	private void checkNotDisconnected() throws ConnectionLostException {
 		if (connection_ == ConnectionState.DISCONNECTED) {
 			throw new ConnectionLostException();
 		}
 	}
+
+	public void setInductionListener(InductionListener induction) {
+		inductionState_.setListener(induction);
+	}
+
+	@Override
+	public void handleReportButtonMask(short buttonMask) {
+		inductionState_.reportButtonMask(buttonMask);
+	}
+
+	@Override
+    public void handleReportUserPressed(boolean userPressed) {
+		inductionState_.reportUserPressed(userPressed);
+    }
 
 //	private void logMethod(String name, Object... args) {
 //		StringBuffer msg = new StringBuffer(name);

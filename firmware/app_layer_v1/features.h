@@ -32,7 +32,7 @@
 
 #include "GenericTypeDefs.h"
 
-#define IND_DBG_PIN 20
+#define IND_DBG_PIN 20 //RE1
 #define IND_DBG2_PIN 21
 #define IND_BUTTON_PIN 19 //RE0
 
@@ -55,5 +55,6 @@ void HardReset();
 void SoftReset();
 void CheckInterface(BYTE interface_id[8]);
 void IndSetButtonMask(WORD new_button_mask);
+void IndTasks();
 
 #endif  // __FEATURES_H__

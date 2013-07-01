@@ -16,7 +16,8 @@
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
  * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ARSHAN POURSOHI OR
  * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * CONSEQUENTIAL DAMAG  // Make sure that
+ES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
  * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
  * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
@@ -44,6 +45,8 @@
 #include "pp_util.h"
 #include "incap.h"
 #include "digital.h"
+#include "sync.h"
+#include <p24Fxxxx.h>
 
 void IndInit();
 
@@ -260,7 +263,7 @@ void CheckInterface(BYTE interface_id[8]) {
 }
 
 // Induction code, should really be in another file
-WORD shift_register;
+UINT16 shift_register;
 //0x0001 = ?
 //0x0002 = Clock button
 //0x0004 = RF-Power
@@ -278,7 +281,22 @@ WORD shift_register;
 //0x4000 = LB-Power
 //0x8000 = LF-
 
-WORD button_mask;
+// Wanted mask
+UINT16 button_mask;
+
+// Actual mask of pressed buttons
+UINT16 pressed_mask;
+
+// If user has pressed a key this is 1 and this also means that we
+// have cleared the button mask, so the application needs to set
+// the button mask again once user is finished with the keyboard
+UINT8 userPressed = 0;
+
+// Last reported value of the user pressed status
+UINT8 lastReportedUserPressed = 0;
+
+// Last mask that were reported
+UINT16 lastReportedButtonMask = 0;
 
 void IndInit() {
   button_mask = 0;
@@ -296,24 +314,105 @@ void IndInit() {
   RPINR0 = 0x1400; //RP20 (IOIO PIN 14) as INT1
 }
 
-void IndSetButtonMask(WORD new_button_mask) {
-  log_printf("IndSetButtonMask(new=0x%x)", new_button_mask);
-  button_mask = new_button_mask;
-  //We don't have to update the output pin here, it is scanned often enough
+static void SendUserPressed(UINT8 userPressed) {
+  log_printf_int("SendUserPressed(0x%X)", userPressed);
+  OUTGOING_MESSAGE msg;
+  msg.type = IND_REPORT_USER_PRESSED;
+  msg.args.ind_report_user_pressed.user_pressed = userPressed;
+  AppProtocolSendMessage(&msg);
 }
 
+static void SendButtonMask(UINT16 buttonMask) {
+  log_printf_int("SendButtonMask(0x%X)", buttonMask);
+  OUTGOING_MESSAGE msg;
+  msg.type = IND_REPORT_BUTTON_MASK;
+  msg.args.report_ind_button_mask.button_mask = buttonMask;
+  AppProtocolSendMessage(&msg);
+}
+
+void IndTasks() {
+  BYTE prev = SyncInterruptLevel(7);
+  UINT16 mask = pressed_mask;
+  UINT8 pressed = userPressed;
+  SyncInterruptLevel(prev);
+
+  if (mask != lastReportedButtonMask) {
+    lastReportedButtonMask = mask;
+    SendButtonMask(lastReportedButtonMask);
+  }
+
+  if (pressed != lastReportedUserPressed) {
+    lastReportedUserPressed = pressed;
+    SendUserPressed(lastReportedUserPressed);
+  }
+}
+
+void IndSetButtonMask(UINT16 new_button_mask) {
+  log_printf("IndSetButtonMask(new=0x%x)", new_button_mask);
+
+  BYTE prev = SyncInterruptLevel(7);
+
+  UINT16 changed_bits = button_mask ^ new_button_mask;
+
+  // Update pressed_mask
+  pressed_mask |= new_button_mask & changed_bits;
+  pressed_mask &= ~(button_mask & changed_bits);
+
+  // If we have any buttons pressed that "we" did not press this means that
+  // the user is pressing it and we should not press any other buttons.
+
+  button_mask = new_button_mask;
+  //We don't have to update the output pin here, it is scanned often enough
+
+  SyncInterruptLevel(prev);
+}
+
+// We some cycles and write direct to the the LATE register
+// instead of using SetDigitalOutLevel. This also avoid trouble with
+// SetDigitalOutLevel using SyncInterruptLevel(4)
 void __attribute__((__interrupt__, auto_psv)) _INT1Interrupt(void)
 {
   IFS1bits.INT1IF = 0; //Clear the INT1 flag
   // Positive flank to 74H595 STCP
-  int shiftReg = (PORTD >> 1) & 0x000F;
-  shift_register = 0x01 << shiftReg;
-  // Save some cycles and write direct to the the register
-  // instead of using SetDigitalOutLevel
-  if (shift_register & button_mask) {
-      LATE |= 1;
+  UINT16 shiftReg = (PORTD >> 1) & 0x000F;
+
+  if (shiftReg == 0) {
+    LATE |= 2; //IND_DBG_PIN
   } else {
-      LATE &= ~1;
+    LATE &= ~2;
+  }
+
+  // We measure the time that the induction hob scans a button. When
+  // it "thinks" that the button is not pressed the scan time is ~5ms and when
+  // it "thinks" that the button is not presses the scan time is ~11ms.
+  // Let's set the threashold to 8ms
+  // timer 4 is sysclk / 64 = 250KHz = 4us per count
+  // 8ms = 8*10^-3/4*10^-6 = 2000
+  // Alternatively we could count number of pulses on PIN6 (CONTROL_LED)
+  // with a counter (1 vs 3 pulses).
+  if (TMR4 > 2000) {
+    // shift_register contains last scanned button
+    pressed_mask |= shift_register;
+  } else {
+    pressed_mask &= ~shift_register;
+  }
+  // Restart timer 4
+  TMR4 = 0;
+
+  shift_register = 0x01 << shiftReg;
+
+  if ((pressed_mask & ~button_mask) != 0) {
+    // Someone is pressing a button
+    button_mask = 0;
+    userPressed = 1;
+    LATE &= ~1;
+    return;
+  }
+
+  if (shift_register & button_mask) {
+    LATE |= 1;
+  } else {
+    LATE &= ~1;
   }
 }
 

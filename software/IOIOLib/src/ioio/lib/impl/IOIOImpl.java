@@ -747,6 +747,8 @@ public class IOIOImpl implements IOIO, DisconnectListener {
 
 	@Override
     public Induction openInduction() throws ConnectionLostException {
-		return new InductionImpl(this);
+		InductionImpl induction = new InductionImpl(this);
+		incomingState_.setInductionListener(induction);
+		return induction;
     }
 }

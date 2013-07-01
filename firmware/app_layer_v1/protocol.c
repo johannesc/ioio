@@ -236,6 +236,7 @@ void AppProtocolTasks(CHANNEL_HANDLE h) {
   SPITasks();
   I2CTasks();
   ICSPTasks();
+  IndTasks();
   if (ConnectionCanSend(h)) {
     BYTE prev = SyncInterruptLevel(1);
     const BYTE* data;

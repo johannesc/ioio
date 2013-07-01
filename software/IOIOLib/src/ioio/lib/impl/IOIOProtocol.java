@@ -96,6 +96,8 @@ class IOIOProtocol {
 	static final int CAPSENSE_REPORT                     = 0x1E;
 	static final int SET_CAPSENSE_SAMPLING               = 0x1F;
 	static final int IND_SET_BUTTON_MASK                 = 0x20;
+	static final int IND_REPORT_BUTTON_MASK              = 0x21;
+	static final int IND_REPORT_USER_PRESSED             = 0x22;
 	static final int[] SCALE_DIV = new int[] {
 		0x1F,  // 31.25
 		0x1E,  // 35.714
@@ -585,6 +587,10 @@ class IOIOProtocol {
 		public void handleCapSenseReport(int pinNum, int value);
 
 		public void handleSetCapSenseSampling(int pinNum, boolean enable);
+
+		public void handleReportButtonMask(short buttonMask);
+
+		public void handleReportUserPressed(boolean userPressed);
 	}
 
 	class IncomingThread extends Thread {
@@ -868,6 +874,17 @@ class IOIOProtocol {
 					case SET_CAPSENSE_SAMPLING:
 						arg1 = readByte();
 						handler_.handleSetCapSenseSampling(arg1 & 0x3F, (arg1 & 0x80) != 0);
+						break;
+
+					case IND_REPORT_BUTTON_MASK:
+						arg1 = readByte();
+						arg2 = readByte();
+						handler_.handleReportButtonMask((short)(arg2 << 8 | arg1));
+						break;
+
+					case IND_REPORT_USER_PRESSED:
+						arg1 = readByte();
+						handler_.handleReportUserPressed(arg1 != 0);
 						break;
 
 					default:

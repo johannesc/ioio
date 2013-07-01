@@ -34,5 +34,28 @@ import ioio.lib.api.exception.ConnectionLostException;
  * Induction control.
  */
 public interface Induction extends Closeable {
+
+	class InductionEvent { }
+
+	class ButtonMaskChangedEvent extends InductionEvent {
+		private final short buttonMask;
+		public ButtonMaskChangedEvent(short buttonMask) {
+			this.buttonMask = buttonMask;
+		}
+
+		public short getButtonMask() {
+			return buttonMask;
+		}
+	}
+
+	class UserPressedEvent extends InductionEvent {
+	}
+
+	class UserReleasedEvent extends InductionEvent {
+	}
+
 	public void setInductionButtonMask(short mask) throws ConnectionLostException;
+
+	public int getEventCount();
+	public InductionEvent readEvent() throws ConnectionLostException, InterruptedException;
 }

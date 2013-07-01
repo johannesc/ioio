@@ -397,6 +397,15 @@ typedef struct PACKED {
   WORD button_mask;
 } IND_SET_BUTTON_MASK_ARGS;
 
+// report button mask
+typedef struct PACKED {
+  UINT16 button_mask;
+} IND_REPORT_BUTTON_MASK_ARGS;
+
+// report user pressed
+typedef struct PACKED {
+  UINT8 user_pressed;
+} IND_REPORT_USER_PRESSED_ARGS;
 // BOOKMARK(add_feature): Add a struct for the new incoming / outgoing message
 // arguments.
 
@@ -465,6 +474,8 @@ typedef struct PACKED {
     SOFT_CLOSE_ARGS                         soft_close;
     CAPSENSE_REPORT_ARGS                    capsense_report;
     SET_CAPSENSE_SAMPLING_ARGS              set_capsense_sampling;
+    IND_REPORT_BUTTON_MASK_ARGS             report_ind_button_mask;
+    IND_REPORT_USER_PRESSED_ARGS             ind_report_user_pressed;
     // BOOKMARK(add_feature): Add argument struct to the union.
   } args;
 } OUTGOING_MESSAGE;
@@ -532,6 +543,8 @@ typedef enum {
   CAPSENSE_REPORT                     = 0x1E,
   SET_CAPSENSE_SAMPLING               = 0x1F,
   IND_SET_BUTTON_MASK                 = 0x20,
+  IND_REPORT_BUTTON_MASK              = 0x21,
+  IND_REPORT_USER_PRESSED             = 0x22,
 
   // BOOKMARK(add_feature): Add new message type to enum.
   MESSAGE_TYPE_LIMIT

@@ -30,10 +30,19 @@ package ioio.lib.impl;
 
 import ioio.lib.api.Induction;
 import ioio.lib.api.exception.ConnectionLostException;
+import ioio.lib.impl.IncomingState.InductionListener;
 
 import java.io.IOException;
+import java.util.LinkedList;
 
-class InductionImpl extends AbstractResource implements Induction {
+class InductionImpl extends AbstractResource implements Induction, InductionListener {
+	private enum State {
+		OPEN, CLOSED
+	};
+
+	private final State state = State.OPEN;
+
+	private final LinkedList<InductionEvent> events = new LinkedList<InductionEvent>();
 
 	InductionImpl(IOIOImpl ioio) throws ConnectionLostException {
 		super(ioio);
@@ -46,5 +55,46 @@ class InductionImpl extends AbstractResource implements Induction {
 		} catch (IOException e) {
 			throw new ConnectionLostException(e);
 		}
+	}
+
+	@Override
+	public synchronized void reportButtonMask(short buttonMask) {
+		System.out.println("Button mask has changed to 0x" + Integer.toHexString(buttonMask));
+		events.addLast(new ButtonMaskChangedEvent(buttonMask));
+		notifyAll();
+	}
+
+	@Override
+	public synchronized void reportUserPressed(boolean userPressed) {
+		System.out.println("reportUserPressed(" + userPressed + ")");
+		if (userPressed) {
+			events.addLast(new UserPressedEvent());
+		} else {
+			events.addLast(new UserReleasedEvent());
+		}
+		notifyAll();
+	}
+
+	@Override
+	public int getEventCount() {
+		synchronized (this) {
+			return events.size();
+		}
+	}
+
+	@Override
+	public synchronized InductionEvent readEvent() throws ConnectionLostException, InterruptedException {
+		while ((state == State.OPEN) && (events.size() == 0)) {
+			wait();
+		}
+		if (state != State.OPEN) {
+			throw new ConnectionLostException();
+		}
+		return events.remove();
+	}
+
+	@Override
+	public synchronized void disconnected() {
+		super.disconnected();
 	}
 }
