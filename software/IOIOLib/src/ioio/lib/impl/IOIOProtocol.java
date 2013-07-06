@@ -96,8 +96,8 @@ class IOIOProtocol {
 	static final int CAPSENSE_REPORT                     = 0x1E;
 	static final int SET_CAPSENSE_SAMPLING               = 0x1F;
 	static final int IND_SET_BUTTON_MASK                 = 0x20;
-	static final int IND_REPORT_BUTTON_MASK              = 0x21;
-	static final int IND_REPORT_USER_PRESSED             = 0x22;
+	static final int IND_REPORT_BUTTON_MASK              = 0x20;
+	static final int IND_REPORT_USER_PRESSED             = 0x21;
 	static final int[] SCALE_DIV = new int[] {
 		0x1F,  // 31.25
 		0x1E,  // 35.714

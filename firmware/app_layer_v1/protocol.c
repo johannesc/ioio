@@ -119,7 +119,9 @@ const BYTE outgoing_arg_size[MESSAGE_TYPE_LIMIT] = {
   sizeof(INCAP_REPORT_ARGS),
   sizeof(SOFT_CLOSE_ARGS),
   sizeof(CAPSENSE_REPORT_ARGS),
-  sizeof(SET_CAPSENSE_SAMPLING_ARGS)
+  sizeof(SET_CAPSENSE_SAMPLING_ARGS),
+  sizeof(IND_REPORT_BUTTON_MASK_ARGS),
+  sizeof(IND_REPORT_USER_PRESSED_ARGS),
 
   // BOOKMARK(add_feature): Add sizeof (argument for outgoing message).
   // Array is indexed by message type enum.

@@ -132,7 +132,9 @@ class IncomingState implements IncomingHandler {
 		private InductionListener induction;
 
 		void reportButtonMask(short buttonMask) {
-			induction.reportButtonMask(buttonMask);
+			if (induction != null) {
+				induction.reportButtonMask(buttonMask);
+			}
 		}
 
 		void setListener(InductionListener induction) {

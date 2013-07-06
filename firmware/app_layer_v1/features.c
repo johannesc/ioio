@@ -403,11 +403,16 @@ void __attribute__((__interrupt__, auto_psv)) _INT1Interrupt(void)
 
   if ((pressed_mask & ~button_mask) != 0) {
     // Someone is pressing a button
+    // Clear the mask, this will make us return here until
+    // all buttons are released
     button_mask = 0;
     userPressed = 1;
     LATE &= ~1;
     return;
   }
+
+  // User is not pressing any button
+  userPressed = 0;
 
   if (shift_register & button_mask) {
     LATE |= 1;

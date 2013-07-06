@@ -59,14 +59,12 @@ class InductionImpl extends AbstractResource implements Induction, InductionList
 
 	@Override
 	public synchronized void reportButtonMask(short buttonMask) {
-		System.out.println("Button mask has changed to 0x" + Integer.toHexString(buttonMask));
 		events.addLast(new ButtonMaskChangedEvent(buttonMask));
 		notifyAll();
 	}
 
 	@Override
 	public synchronized void reportUserPressed(boolean userPressed) {
-		System.out.println("reportUserPressed(" + userPressed + ")");
 		if (userPressed) {
 			events.addLast(new UserPressedEvent());
 		} else {
