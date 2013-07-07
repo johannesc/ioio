@@ -34,24 +34,74 @@ import ioio.lib.api.exception.ConnectionLostException;
  * Induction control.
  */
 public interface Induction extends Closeable {
+	public static final short BUTTON_MASK_PLUS_LEFT_FRONT = 0x2000;
+	public static final short BUTTON_MASK_PLUS_LEFT_BACK = 0x0800;
+	public static final short BUTTON_MASK_PLUS_RIGHT_BACK = 0x1000;
+	public static final short BUTTON_MASK_PLUS_RIGHT_FRONT = 0x0040;
+
+	public static final short BUTTON_MASK_MINUS_LEFT_FRONT = (short)0x8000;
+	public static final short BUTTON_MASK_MINUS_LEFT_BACK = 0x0008;
+	public static final short BUTTON_MASK_MINUS_RIGHT_BACK = 0x0010;
+	public static final short BUTTON_MASK_MINUS_RIGHT_FRONT = 0x0400;
+
+	public static final short BUTTON_MASK_POWER_LEFT_FRONT = 0x0080;
+	public static final short BUTTON_MASK_POWER_LEFT_BACK = 0x4000;
+	public static final short BUTTON_MASK_POWER_RIGHT_BACK = 0x0100;
+	public static final short BUTTON_MASK_POWER_RIGHT_FRONT = 0x0004;
+
+	public static final short BUTTON_MASK_CLOCK = 0x0002;
+	public static final short BUTTON_MASK_LOCK = 0x0020;
+	public static final short BUTTON_MASK_SPARE = 0x0200;
+	public static final short BUTTON_MASK_ON_OFF = 0x0001;
+
+	public static final short BUTTON_MASK_POWER_CONTROL_LEFT_FRONT =
+			  BUTTON_MASK_PLUS_LEFT_FRONT
+			| BUTTON_MASK_MINUS_LEFT_FRONT
+			| BUTTON_MASK_POWER_LEFT_FRONT
+			;
+
+	public static final short BUTTON_MASK_POWER_CONTROL_LEFT_BACK =
+			  BUTTON_MASK_PLUS_LEFT_BACK
+			| BUTTON_MASK_MINUS_LEFT_BACK
+			| BUTTON_MASK_POWER_LEFT_BACK
+			;
+
+	public static final short BUTTON_MASK_POWER_CONTROL_RIGHT_BACK =
+			  BUTTON_MASK_PLUS_RIGHT_BACK
+			| BUTTON_MASK_MINUS_RIGHT_BACK
+			| BUTTON_MASK_POWER_RIGHT_BACK
+			;
+
+	public static final short BUTTON_MASK_POWER_CONTROL_RIGHT_FRONT =
+			  BUTTON_MASK_PLUS_RIGHT_FRONT
+			| BUTTON_MASK_MINUS_RIGHT_FRONT
+			| BUTTON_MASK_POWER_RIGHT_FRONT
+			;
+
+	public static final short BUTTON_MASK_POWER_CONTROL =
+			  BUTTON_MASK_POWER_CONTROL_LEFT_FRONT
+			| BUTTON_MASK_POWER_CONTROL_LEFT_BACK
+			| BUTTON_MASK_POWER_CONTROL_RIGHT_BACK
+			| BUTTON_MASK_POWER_CONTROL_RIGHT_FRONT
+			;
 
 	class InductionEvent { }
 
 	class ButtonMaskChangedEvent extends InductionEvent {
 		private final short buttonMask;
-		public ButtonMaskChangedEvent(short buttonMask) {
+		private boolean userPressed;
+		public ButtonMaskChangedEvent(short buttonMask, boolean userPressed) {
 			this.buttonMask = buttonMask;
+			this.userPressed = userPressed;
 		}
 
 		public short getButtonMask() {
 			return buttonMask;
 		}
-	}
 
-	class UserPressedEvent extends InductionEvent {
-	}
-
-	class UserReleasedEvent extends InductionEvent {
+		public boolean getUserPressed() {
+			return userPressed;
+		}
 	}
 
 	public void setInductionButtonMask(short mask) throws ConnectionLostException;

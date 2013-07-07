@@ -61,9 +61,7 @@ class IncomingState implements IncomingHandler {
 	}
 
 	interface InductionListener {
-		void reportButtonMask(short buttonMask);
-
-		void reportUserPressed(boolean userPressed);
+		void reportButtonMask(short buttonMask, boolean userPressed);
 	}
 
 	class InputPinState {
@@ -131,18 +129,14 @@ class IncomingState implements IncomingHandler {
 
 		private InductionListener induction;
 
-		void reportButtonMask(short buttonMask) {
+		void reportButtonMask(short buttonMask, boolean userPressed) {
 			if (induction != null) {
-				induction.reportButtonMask(buttonMask);
+				induction.reportButtonMask(buttonMask, userPressed);
 			}
 		}
 
 		void setListener(InductionListener induction) {
 			this.induction = induction;
-		}
-
-		public void reportUserPressed(boolean userPressed) {
-			induction.reportUserPressed(userPressed);
 		}
 	}
 
@@ -507,14 +501,9 @@ class IncomingState implements IncomingHandler {
 	}
 
 	@Override
-	public void handleReportButtonMask(short buttonMask) {
-		inductionState_.reportButtonMask(buttonMask);
+	public void handleReportButtonMask(short buttonMask, boolean userPressed) {
+		inductionState_.reportButtonMask(buttonMask, userPressed);
 	}
-
-	@Override
-    public void handleReportUserPressed(boolean userPressed) {
-		inductionState_.reportUserPressed(userPressed);
-    }
 
 //	private void logMethod(String name, Object... args) {
 //		StringBuffer msg = new StringBuffer(name);

@@ -314,19 +314,12 @@ void IndInit() {
   RPINR0 = 0x1400; //RP20 (IOIO PIN 14) as INT1
 }
 
-static void SendUserPressed(UINT8 userPressed) {
-  log_printf_int("SendUserPressed(0x%X)", userPressed);
-  OUTGOING_MESSAGE msg;
-  msg.type = IND_REPORT_USER_PRESSED;
-  msg.args.ind_report_user_pressed.user_pressed = userPressed;
-  AppProtocolSendMessage(&msg);
-}
-
-static void SendButtonMask(UINT16 buttonMask) {
+static void SendButtonMask(UINT16 buttonMask, UINT8 userPressed) {
   log_printf_int("SendButtonMask(0x%X)", buttonMask);
   OUTGOING_MESSAGE msg;
   msg.type = IND_REPORT_BUTTON_MASK;
   msg.args.report_ind_button_mask.button_mask = buttonMask;
+  msg.args.report_ind_button_mask.user_pressed = userPressed;
   AppProtocolSendMessage(&msg);
 }
 
@@ -336,14 +329,11 @@ void IndTasks() {
   UINT8 pressed = userPressed;
   SyncInterruptLevel(prev);
 
-  if (mask != lastReportedButtonMask) {
+  if ((mask != lastReportedButtonMask) ||
+          (pressed != lastReportedUserPressed)) {
     lastReportedButtonMask = mask;
-    SendButtonMask(lastReportedButtonMask);
-  }
-
-  if (pressed != lastReportedUserPressed) {
     lastReportedUserPressed = pressed;
-    SendUserPressed(lastReportedUserPressed);
+    SendButtonMask(mask, pressed);
   }
 }
 

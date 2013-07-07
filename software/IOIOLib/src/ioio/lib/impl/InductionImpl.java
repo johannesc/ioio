@@ -58,18 +58,8 @@ class InductionImpl extends AbstractResource implements Induction, InductionList
 	}
 
 	@Override
-	public synchronized void reportButtonMask(short buttonMask) {
-		events.addLast(new ButtonMaskChangedEvent(buttonMask));
-		notifyAll();
-	}
-
-	@Override
-	public synchronized void reportUserPressed(boolean userPressed) {
-		if (userPressed) {
-			events.addLast(new UserPressedEvent());
-		} else {
-			events.addLast(new UserReleasedEvent());
-		}
+	public synchronized void reportButtonMask(short buttonMask, boolean userPressed) {
+		events.addLast(new ButtonMaskChangedEvent(buttonMask, userPressed));
 		notifyAll();
 	}
 
