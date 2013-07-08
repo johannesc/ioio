@@ -395,6 +395,8 @@ void __attribute__((__interrupt__, auto_psv)) _INT1Interrupt(void)
     // Someone is pressing a button
     // Clear the mask, this will make us return here until
     // all buttons are released
+    // Also clear the bits from the pressed mask
+    pressed_mask &= ~button_mask;
     button_mask = 0;
     userPressed = 1;
     LATE &= ~1;
