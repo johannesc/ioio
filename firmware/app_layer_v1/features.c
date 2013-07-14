@@ -374,7 +374,7 @@ void __attribute__((__interrupt__, auto_psv)) _INT1Interrupt(void)
 
   // We measure the time that the induction hob scans a button. When
   // it "thinks" that the button is not pressed the scan time is ~5ms and when
-  // it "thinks" that the button is not presses the scan time is ~11ms.
+  // it "thinks" that the button is pressed the scan time is ~11ms.
   // Let's set the threashold to 8ms
   // timer 4 is sysclk / 64 = 250KHz = 4us per count
   // 8ms = 8*10^-3/4*10^-6 = 2000
