@@ -33,7 +33,7 @@
 #include "GenericTypeDefs.h"
 
 #define IND_DBG_PIN 20 //RE1
-#define IND_DBG2_PIN 21
+#define IND_DBG2_PIN 21 //RE2
 #define IND_BUTTON_PIN 19 //RE0
 
 #define IND_Q0_PIN 13 //RD4

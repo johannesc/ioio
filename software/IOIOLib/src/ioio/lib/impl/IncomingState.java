@@ -64,6 +64,10 @@ class IncomingState implements IncomingHandler {
 		void reportButtonMask(short buttonMask, boolean userPressed);
 	}
 
+	interface TemperatureSensorListener {
+		void reportTemperatureSensorData(long temperatureSensorData);
+	}
+
 	class InputPinState {
 		private Queue<InputPinListener> listeners_ = new ConcurrentLinkedQueue<InputPinListener>();
 		private boolean currentOpen_ = false;
@@ -140,7 +144,23 @@ class IncomingState implements IncomingHandler {
 		}
 	}
 
+	class TemperatureSensorState {
+
+		private TemperatureSensorListener temperatureSensorListener;
+
+		void reportTemperatureSensorData(long sensorData) {
+			if (temperatureSensorListener != null) {
+				temperatureSensorListener.reportTemperatureSensorData(sensorData);
+			}
+		}
+
+		void setListener(TemperatureSensorListener temperatureSensorListener) {
+			this.temperatureSensorListener = temperatureSensorListener;
+		}
+	}
+
 	private final InductionState inductionState_ = new InductionState();
+	private final TemperatureSensorState temperatureSensorState_ = new TemperatureSensorState();
 	private InputPinState[] intputPinStates_;
 	private DataModuleState[] uartStates_;
 	private DataModuleState[] twiStates_;
@@ -503,6 +523,16 @@ class IncomingState implements IncomingHandler {
 	@Override
 	public void handleReportButtonMask(short buttonMask, boolean userPressed) {
 		inductionState_.reportButtonMask(buttonMask, userPressed);
+	}
+
+
+	public void setTemperatureSensorListener(TemperatureSensorListener temperatureSensorListener) {
+		temperatureSensorState_.setListener(temperatureSensorListener);
+	}
+
+	@Override
+	public void handleTemperatureSensorData(long temperatureSensorData) {
+		temperatureSensorState_.reportTemperatureSensorData(temperatureSensorData);
 	}
 
 //	private void logMethod(String name, Object... args) {

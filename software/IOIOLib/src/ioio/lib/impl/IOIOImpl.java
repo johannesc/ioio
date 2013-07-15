@@ -43,6 +43,7 @@ import ioio.lib.api.PulseInput.ClockRate;
 import ioio.lib.api.PulseInput.PulseMode;
 import ioio.lib.api.PwmOutput;
 import ioio.lib.api.SpiMaster;
+import ioio.lib.api.TemperatureSensor;
 import ioio.lib.api.TwiMaster;
 import ioio.lib.api.TwiMaster.Rate;
 import ioio.lib.api.Uart;
@@ -746,9 +747,16 @@ public class IOIOImpl implements IOIO, DisconnectListener {
 	}
 
 	@Override
-    public Induction openInduction() throws ConnectionLostException {
+	public Induction openInduction() throws ConnectionLostException {
 		InductionImpl induction = new InductionImpl(this);
 		incomingState_.setInductionListener(induction);
 		return induction;
-    }
+	}
+
+	@Override
+	public TemperatureSensor openTemperatureSensor() throws ConnectionLostException {
+		TemperatureSensorImpl temperatureSensor = new TemperatureSensorImpl(this);
+		incomingState_.setTemperatureSensorListener(temperatureSensor);
+		return temperatureSensor;
+	}
 }

@@ -97,6 +97,8 @@ class IOIOProtocol {
 	static final int SET_CAPSENSE_SAMPLING               = 0x1F;
 	static final int IND_SET_BUTTON_MASK                 = 0x20;
 	static final int IND_REPORT_BUTTON_MASK              = 0x20;
+	static final int TEMP_ALLOCATE                       = 0x21;
+	static final int TEMP_REPORT_DATA                    = 0x21;
 	static final int[] SCALE_DIV = new int[] {
 		0x1F,  // 31.25
 		0x1E,  // 35.714
@@ -588,6 +590,8 @@ class IOIOProtocol {
 		public void handleSetCapSenseSampling(int pinNum, boolean enable);
 
 		public void handleReportButtonMask(short buttonMask, boolean userPressed);
+
+		public void handleTemperatureSensorData(long temperatureSensorBits);
 	}
 
 	class IncomingThread extends Thread {
@@ -878,6 +882,17 @@ class IOIOProtocol {
 						arg2 = readByte();
 						int arg3 = readByte();
 						handler_.handleReportButtonMask((short)(arg2 << 8 | arg1), arg3 != 0);
+						break;
+
+					case TEMP_REPORT_DATA:
+						byte[] sensorData = new byte[8];
+						readBytes(sensorData.length, sensorData);
+						long value = 0;
+						for (int i = 0; i < sensorData.length; i++) {
+							//System.out.print("0x" + Integer.toHexString(sensorData[i] & 0xFF) + " ");
+							value |= (((long)sensorData[i]) & 0xFF) << (i * 8);
+						}
+						handler_.handleTemperatureSensorData(value);
 						break;
 
 					default:

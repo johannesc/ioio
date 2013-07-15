@@ -403,6 +403,18 @@ typedef struct PACKED {
   UINT8 user_pressed;
 } IND_REPORT_BUTTON_MASK_ARGS;
 
+// report temperature sensor data
+typedef struct PACKED {
+  BYTE pin : 6;
+  BYTE : 1;
+  BYTE enable : 1;
+} TEMP_ALLOCATE_ARGS;
+
+// report temperature sensor data
+typedef struct PACKED {
+  UINT64 data;
+} TEMP_REPORT_DATA_ARGS;
+
 // BOOKMARK(add_feature): Add a struct for the new incoming / outgoing message
 // arguments.
 
@@ -441,6 +453,7 @@ typedef struct PACKED {
     SET_PIN_CAPSENSE_ARGS                    set_pin_capsense;
     SET_CAPSENSE_SAMPLING_ARGS               set_capsense_sampling;
     IND_SET_BUTTON_MASK_ARGS                 ind_set_button_mask;
+    TEMP_ALLOCATE_ARGS                       temp_allocate;
     // BOOKMARK(add_feature): Add argument struct to the union.
   } args;
   BYTE __vabuf[64];  // buffer for var args. never access directly!
@@ -472,6 +485,7 @@ typedef struct PACKED {
     CAPSENSE_REPORT_ARGS                    capsense_report;
     SET_CAPSENSE_SAMPLING_ARGS              set_capsense_sampling;
     IND_REPORT_BUTTON_MASK_ARGS             report_ind_button_mask;
+    TEMP_REPORT_DATA_ARGS                   temp_report_data;
     // BOOKMARK(add_feature): Add argument struct to the union.
   } args;
 } OUTGOING_MESSAGE;
@@ -540,6 +554,9 @@ typedef enum {
   SET_CAPSENSE_SAMPLING               = 0x1F,
   IND_SET_BUTTON_MASK                 = 0x20,
   IND_REPORT_BUTTON_MASK              = 0x20,
+
+  TEMP_ALLOCATE                       = 0x21,
+  TEMP_REPORT_DATA                    = 0x21,
 
   // BOOKMARK(add_feature): Add new message type to enum.
   MESSAGE_TYPE_LIMIT

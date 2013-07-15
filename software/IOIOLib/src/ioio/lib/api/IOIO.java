@@ -695,6 +695,9 @@ public interface IOIO {
 
 	public Induction openInduction()
 			throws ConnectionLostException;
+
+	public TemperatureSensor openTemperatureSensor()
+			throws ConnectionLostException;
 	/**
 	 * Start a batch of operations. This is strictly an optimization and will
 	 * not change functionality: if the client knows that a sequence of several

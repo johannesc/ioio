@@ -298,12 +298,25 @@ UINT8 lastReportedUserPressed = 0;
 // Last mask that were reported
 UINT16 lastReportedButtonMask = 0;
 
+//Only read these when IPL >= 6
+UINT8 tempPacketCount = 0;
+UINT64 validTemperatureData = 0;
+
+static inline UINT16 getDeltaTime(UINT16 startTime, UINT16 stopTime) {
+  if (stopTime < startTime) {
+      return (stopTime - startTime + 65535);
+  } else {
+      return (stopTime - startTime);
+  }
+}
+
 void IndInit() {
   button_mask = 0;
   shift_register = 0;
 
   SetPinDigitalOut(IND_BUTTON_PIN, 0, 0);  // Button pin: output, not open drain, 0 = off
   SetPinDigitalOut(IND_DBG_PIN, 0, 0);
+  SetPinDigitalOut(IND_DBG2_PIN, 0, 0);
  // Input pins, pull down
 
   //SetChangeNotify(IND_LEFT_STCP_PIN, 1);
@@ -312,6 +325,12 @@ void IndInit() {
   IEC1bits.INT1IE = 1; //Enable int1
   IPC5bits.INT1IP = 7; //Highest priority
   RPINR0 = 0x1400; //RP20 (IOIO PIN 14) as INT1
+
+  INTCON2 &= ~0x0004; //INT2 at positive edge
+  IFS1bits.INT2IF = 0; //Clear int2 flag
+  IEC1bits.INT2IE = 1; //Enable int2
+  IPC7bits.INT2IP = 6; //Priority 6 of 7
+  RPINR1 = 0x0011; //RP17 (IOIO PIN 2) as INT2
 }
 
 static void SendButtonMask(UINT16 buttonMask, UINT8 userPressed) {
@@ -323,10 +342,22 @@ static void SendButtonMask(UINT16 buttonMask, UINT8 userPressed) {
   AppProtocolSendMessage(&msg);
 }
 
+static void SendTemperatureData(UINT64 temperatureData) {
+  log_printf_int("SendTemperatureData(0x%lX)", temperatureData);
+  OUTGOING_MESSAGE msg;
+  msg.type = TEMP_REPORT_DATA;
+  msg.args.temp_report_data.data = temperatureData;
+  AppProtocolSendMessage(&msg);
+}
+
 void IndTasks() {
+  static UINT8 lastTempCount = 0;
+
   BYTE prev = SyncInterruptLevel(7);
   UINT16 mask = pressed_mask;
   UINT8 pressed = userPressed;
+  UINT64 temperatureData = validTemperatureData;
+  UINT8 tempCount = tempPacketCount;
   SyncInterruptLevel(prev);
 
   if ((mask != lastReportedButtonMask) ||
@@ -334,6 +365,11 @@ void IndTasks() {
     lastReportedButtonMask = mask;
     lastReportedUserPressed = pressed;
     SendButtonMask(mask, pressed);
+  }
+
+  if (tempCount != lastTempCount) {
+    lastTempCount = tempCount;
+    SendTemperatureData(temperatureData);
   }
 }
 
@@ -362,6 +398,7 @@ void IndSetButtonMask(UINT16 new_button_mask) {
 // SetDigitalOutLevel using SyncInterruptLevel(4)
 void __attribute__((__interrupt__, auto_psv)) _INT1Interrupt(void)
 {
+  static UINT16 startTime = 0;
   IFS1bits.INT1IF = 0; //Clear the INT1 flag
   // Positive flank to 74H595 STCP
   UINT16 shiftReg = (PORTD >> 1) & 0x000F;
@@ -380,14 +417,16 @@ void __attribute__((__interrupt__, auto_psv)) _INT1Interrupt(void)
   // 8ms = 8*10^-3/4*10^-6 = 2000
   // Alternatively we could count number of pulses on PIN6 (CONTROL_LED)
   // with a counter (1 vs 3 pulses).
-  if (TMR4 > 2000) {
+  UINT16 deltaTime = getDeltaTime(startTime, TMR4);
+
+  if (deltaTime > 2000) {
     // shift_register contains last scanned button
     pressed_mask |= shift_register;
   } else {
     pressed_mask &= ~shift_register;
   }
-  // Restart timer 4
-  TMR4 = 0;
+  // Record when we start
+  startTime = TMR4;
 
   shift_register = 0x01 << shiftReg;
 
@@ -410,6 +449,75 @@ void __attribute__((__interrupt__, auto_psv)) _INT1Interrupt(void)
     LATE |= 1;
   } else {
     LATE &= ~1;
+  }
+}
+
+void __attribute__((__interrupt__, auto_psv)) _INT2Interrupt(void) {
+  static UINT64 temperatureData = 0;
+  static UINT16 tempStartTime = 0;
+  static UINT8 pulseCount = 0;
+
+  IFS1bits.INT2IF = 0; //Clear the INT2 flag
+
+  UINT16 deltaTime = getDeltaTime(tempStartTime, TMR4);
+  tempStartTime = TMR4;
+  pulseCount++;
+
+  // The packet looks like:
+  // 4 PULSES (=3 '0') + PAUSE + 37 PULSES (= 36 bits)
+  // One PULSE is 560us
+  //
+  // timer 4 is sysclk / 64 = 250KHz = 4us per count
+  // 1ms = 1*10^-3/4*10^-6 = 250
+  //
+  // A 0-bit is transmitted as ~2.4ms pulse - pulse
+  //    -- accept 1.8 - 3ms = 450 - 750 counts
+  // A 1-bit is transmitted as 4.6ms pulse - pulse
+  //    -- accept 4 - 5.2ms = 1000-1300 counts
+  // PAUSE is = 8.6ms
+  //    -- accept 8 - 9.2ms = 2000-2300 counts
+  //
+  // Time between packets seems to be 19 or 32ms, packet is resent
+  // 6 times each.
+  BOOL valid = FALSE;
+
+  if ((deltaTime > 450) && (deltaTime < 750)) {
+    // We have a '0' bit
+    if ((pulseCount > 1) && (pulseCount < 5)) {
+      // The first four "start pulses". This means pulse count 2,3,4
+      valid = TRUE;
+    } else if ((pulseCount > 5) && (pulseCount <= 41)) {
+      // We have a regular '0' data bit
+      valid = TRUE;
+    }
+  } else if ((deltaTime > 1000) && (deltaTime < 1300)) {
+    // We have a '1' bit
+    if ((pulseCount > 5) && (pulseCount <= 41)) {
+      // The first four "start pulses" = 3 gaps
+      valid = TRUE;
+      temperatureData |= ((UINT64) 1) << (41 - pulseCount);
+    }
+  } else if ((deltaTime > 2000) && (deltaTime < 2300)) {
+    // We have a PAUSE
+    if (pulseCount == 5) {
+      valid = TRUE;
+    }
+  }
+
+  if (valid) {
+    LATE |= 4; //IND_DBG2_PIN
+  } else {
+    LATE &= ~4;
+  }
+
+  if (!valid) {
+      // Invalid length between pulses, consider this as the start
+      // of a new packed.
+      pulseCount = 1;
+      temperatureData = 0;
+  } else if (pulseCount == 41) {
+    validTemperatureData = temperatureData;
+    tempPacketCount++;
   }
 }
 

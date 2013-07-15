@@ -82,7 +82,9 @@ const BYTE incoming_arg_size[MESSAGE_TYPE_LIMIT] = {
   sizeof(SOFT_CLOSE_ARGS),
   sizeof(SET_PIN_CAPSENSE_ARGS),
   sizeof(SET_CAPSENSE_SAMPLING_ARGS),
-  sizeof(IND_SET_BUTTON_MASK_ARGS)
+  sizeof(IND_SET_BUTTON_MASK_ARGS),
+  sizeof(TEMP_ALLOCATE_ARGS),
+
   // BOOKMARK(add_feature): Add sizeof (argument for incoming message).
   // Array is indexed by message type enum.
 };
@@ -121,6 +123,7 @@ const BYTE outgoing_arg_size[MESSAGE_TYPE_LIMIT] = {
   sizeof(CAPSENSE_REPORT_ARGS),
   sizeof(SET_CAPSENSE_SAMPLING_ARGS),
   sizeof(IND_REPORT_BUTTON_MASK_ARGS),
+  sizeof(TEMP_REPORT_DATA_ARGS),
 
   // BOOKMARK(add_feature): Add sizeof (argument for outgoing message).
   // Array is indexed by message type enum.
@@ -510,6 +513,9 @@ static BOOL MessageDone() {
     case IND_SET_BUTTON_MASK:
       IndSetButtonMask(rx_msg.args.ind_set_button_mask.button_mask);
       break;
+    case TEMP_ALLOCATE:
+        // For now we have hardcoded pins and always start this.
+        break;
     // BOOKMARK(add_feature): Add incoming message handling to switch clause.
     // Call Echo() if the message is to be echoed back.
 
