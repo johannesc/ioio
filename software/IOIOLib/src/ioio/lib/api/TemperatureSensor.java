@@ -13,13 +13,13 @@ public interface TemperatureSensor extends Closeable {
 		private long temperatureSensorData;
 		public TemperatureDataEvent(long temperatureSensorData) {
 			this.temperatureSensorData = temperatureSensorData;
-			System.out.print("Raw packet:");
-			printBinaryString((byte) ((temperatureSensorData >> 28) & 0xFF), 8);
-			printBinaryString((byte) ((temperatureSensorData >> 20) & 0xFF), 8);
-			printBinaryString((byte) ((temperatureSensorData >> 12) & 0xFF), 8);
-			printBinaryString((byte) ((temperatureSensorData >> 4) & 0xFF), 8);
-			printBinaryString((byte) (temperatureSensorData & 0x0F), 4);
-			System.out.println();
+			//System.out.print("Raw packet:");
+			//printBinaryString((byte) ((temperatureSensorData >> 28) & 0xFF), 8);
+			//printBinaryString((byte) ((temperatureSensorData >> 20) & 0xFF), 8);
+			//printBinaryString((byte) ((temperatureSensorData >> 12) & 0xFF), 8);
+			//printBinaryString((byte) ((temperatureSensorData >> 4) & 0xFF), 8);
+			//printBinaryString((byte) (temperatureSensorData & 0x0F), 4);
+			//System.out.println();
 		}
 
 		/* The Rubiscon send the data as:
@@ -67,16 +67,16 @@ public interface TemperatureSensor extends Closeable {
 			return out;
 		}
 
-		private static void printBinaryString(byte binary, int digits) {
-			for (int i = (8 - digits); i < 8; i++) {
-				if ((binary & (1 << (7 - i))) != 0) {
-					System.out.print("1");
-				} else {
-					System.out.print("0");
-				}
-			}
-			System.out.print(" ");
-		}
+		//private static void printBinaryString(byte binary, int digits) {
+		//	for (int i = (8 - digits); i < 8; i++) {
+		//		if ((binary & (1 << (7 - i))) != 0) {
+		//			System.out.print("1");
+		//		} else {
+		//			System.out.print("0");
+		//		}
+		//	}
+		//	System.out.print(" ");
+		//}
 	}
 
 	public int getEventCount();
