@@ -30,6 +30,7 @@ package ioio.lib.pc;
 
 import ioio.lib.api.IOIOConnection;
 import ioio.lib.api.exception.ConnectionLostException;
+import ioio.lib.spi.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -58,24 +59,20 @@ class SerialPortIOIOConnection implements IOIOConnection {
 			try {
 				CommPortIdentifier identifier = CommPortIdentifier
 						.getPortIdentifier(name_);
+				Thread.sleep(1000);
 				CommPort commPort = identifier.open(this.getClass().getName(),
-						1000);
+						5000);
 				synchronized (this) {
 					if (!abort_) {
 						serialPort_ = (SerialPort) commPort;
 						serialPort_.setDTR(false);
 						serialPort_.enableReceiveThreshold(1);
 						serialPort_.enableReceiveTimeout(500);
-						
+
 						inputStream_ = new GracefullyClosingInputStream(
 								serialPort_.getInputStream());
 						outputStream_ = serialPort_.getOutputStream();
-						
-						// Clear any lingering bytes before opening.
-						while (inputStream_.available() > 0) {
-							inputStream_.read();
-						}
-						
+
 						// Open.
 						serialPort_.setDTR(true);
 						Thread.sleep(100);
@@ -83,11 +80,13 @@ class SerialPortIOIOConnection implements IOIOConnection {
 					}
 				}
 			} catch (NoSuchPortException e) {
+				System.out.println("NoSuchPortException: " + e);
 				try {
 					Thread.sleep(1000);
 				} catch (InterruptedException e1) {
 				}
 			} catch (Exception e) {
+				System.out.println("Exception: " + e);
 				if (serialPort_ != null) {
 					serialPort_.close();
 				}
