@@ -33,7 +33,7 @@ public interface TemperatureSensor extends Closeable {
 		/**
 		 * @return The temperature in Fahrenheit from the Rubiscon barbecue thermometer.
 		 */
-		public long getTemperatureInFahrenheit() {
+		public int getTemperatureInFahrenheit() {
 			int tempInFahrenheit = nibbleSwap((byte) ((temperatureSensorData >> 28) & 0xFF)) & 0xFF;
 			int tempHighBits = (int) ((temperatureSensorData >> 24) & 0x0F);
 			tempInFahrenheit |= tempHighBits << 8;
@@ -44,8 +44,8 @@ public interface TemperatureSensor extends Closeable {
 		/**
 		 * @return The temperature in Celsius from the Rubiscon barbecue thermometer.
 		 */
-		public long getTemperatureInCelsius() {
-			long fahrenheit = getTemperatureInFahrenheit();
+		public int getTemperatureInCelsius() {
+			int fahrenheit = getTemperatureInFahrenheit();
 			return ((fahrenheit - 32) * 5) / 9;
 		}
 
