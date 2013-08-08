@@ -9,6 +9,7 @@ import java.util.LinkedList;
 class TemperatureSensorImpl extends AbstractResource implements
 		TemperatureSensor, TemperatureSensorListener {
 	private final LinkedList<TemperatureEvent> events = new LinkedList<TemperatureEvent>();
+	private final LinkedList<EventCallback> callbacks = new LinkedList<EventCallback>();
 
 	TemperatureSensorImpl(IOIOImpl ioio) throws ConnectionLostException {
 		super(ioio);
@@ -35,7 +36,16 @@ class TemperatureSensorImpl extends AbstractResource implements
 
 	@Override
 	public synchronized void reportTemperatureSensorData(long temperatureSensorBits) {
-		events.addLast(new TemperatureDataEvent(temperatureSensorBits));
+		TemperatureDataEvent temperatureEvent = new TemperatureDataEvent(temperatureSensorBits);
+		events.addLast(temperatureEvent);
 		notifyAll();
+		for (EventCallback callback : callbacks) {
+			callback.notifyEvent(temperatureEvent);
+		}
+	}
+
+	@Override
+	public void registerCallback(EventCallback callback) {
+		callbacks.add(callback);
 	}
 }

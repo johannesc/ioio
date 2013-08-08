@@ -10,7 +10,7 @@ public interface TemperatureSensor extends Closeable {
 	class TemperatureEvent { }
 
 	class TemperatureDataEvent extends TemperatureEvent {
-		private long temperatureSensorData;
+		private final long temperatureSensorData;
 		public TemperatureDataEvent(long temperatureSensorData) {
 			this.temperatureSensorData = temperatureSensorData;
 			//System.out.print("Raw packet:");
@@ -81,4 +81,10 @@ public interface TemperatureSensor extends Closeable {
 
 	public int getEventCount();
 	public TemperatureEvent readEvent() throws ConnectionLostException, InterruptedException;
+
+	public interface EventCallback {
+		public void notifyEvent(TemperatureEvent temperatureEvent);
+	}
+
+	public void registerCallback(EventCallback callback);
 }

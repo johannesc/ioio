@@ -43,6 +43,7 @@ class InductionImpl extends AbstractResource implements Induction, InductionList
 	private final State state = State.OPEN;
 
 	private final LinkedList<InductionEvent> events = new LinkedList<InductionEvent>();
+	private final LinkedList<EventCallback> callbacks = new LinkedList<EventCallback>();
 
 	InductionImpl(IOIOImpl ioio) throws ConnectionLostException {
 		super(ioio);
@@ -59,8 +60,12 @@ class InductionImpl extends AbstractResource implements Induction, InductionList
 
 	@Override
 	public synchronized void reportButtonMask(short buttonMask, boolean userPressed) {
-		events.addLast(new ButtonMaskChangedEvent(buttonMask, userPressed));
+		ButtonMaskChangedEvent event = new ButtonMaskChangedEvent(buttonMask, userPressed);
+		events.addLast(event);
 		notifyAll();
+		for (EventCallback callback : callbacks) {
+			callback.notifyEvent(event);
+		}
 	}
 
 	@Override
@@ -84,5 +89,10 @@ class InductionImpl extends AbstractResource implements Induction, InductionList
 	@Override
 	public synchronized void disconnected() {
 		super.disconnected();
+	}
+
+	@Override
+	public void registerCallback(EventCallback callback) {
+		callbacks.add(callback);
 	}
 }
