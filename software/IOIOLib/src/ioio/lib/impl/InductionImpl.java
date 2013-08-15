@@ -36,13 +36,6 @@ import java.io.IOException;
 import java.util.LinkedList;
 
 class InductionImpl extends AbstractResource implements Induction, InductionListener {
-	private enum State {
-		OPEN, CLOSED
-	};
-
-	private final State state = State.OPEN;
-
-	private final LinkedList<InductionEvent> events = new LinkedList<InductionEvent>();
 	private final LinkedList<EventCallback> callbacks = new LinkedList<EventCallback>();
 
 	InductionImpl(IOIOImpl ioio) throws ConnectionLostException {
@@ -61,29 +54,9 @@ class InductionImpl extends AbstractResource implements Induction, InductionList
 	@Override
 	public synchronized void reportButtonMask(short buttonMask, boolean userPressed) {
 		ButtonMaskChangedEvent event = new ButtonMaskChangedEvent(buttonMask, userPressed);
-		events.addLast(event);
-		notifyAll();
 		for (EventCallback callback : callbacks) {
 			callback.notifyEvent(event);
 		}
-	}
-
-	@Override
-	public int getEventCount() {
-		synchronized (this) {
-			return events.size();
-		}
-	}
-
-	@Override
-	public synchronized InductionEvent readEvent() throws ConnectionLostException, InterruptedException {
-		while ((state == State.OPEN) && (events.size() == 0)) {
-			wait();
-		}
-		if (state != State.OPEN) {
-			throw new ConnectionLostException();
-		}
-		return events.remove();
 	}
 
 	@Override

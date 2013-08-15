@@ -28,7 +28,6 @@
  */
 package ioio.lib.api;
 
-import ioio.lib.api.TemperatureSensor.TemperatureEvent;
 import ioio.lib.api.exception.ConnectionLostException;
 
 /**
@@ -106,9 +105,6 @@ public interface Induction extends Closeable {
 	}
 
 	public void setInductionButtonMask(short mask) throws ConnectionLostException;
-
-	public int getEventCount();
-	public InductionEvent readEvent() throws ConnectionLostException, InterruptedException;
 
 	public interface EventCallback {
 		public void notifyEvent(InductionEvent event);

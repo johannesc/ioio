@@ -1,11 +1,13 @@
 package ioio.lib.api;
 
-import ioio.lib.api.exception.ConnectionLostException;
-
 /**
  * Temperature sensor interface.
  */
 public interface TemperatureSensor extends Closeable {
+
+	// Lets have some sanity values
+	static final int MAX_VALID_TEMPERATURE_IN_CELSIUS = 250;
+	static final int MIN_VALID_TEMPERATURE_IN_CELSIUS = -50;
 
 	class TemperatureEvent { }
 
@@ -28,7 +30,10 @@ public interface TemperatureSensor extends Closeable {
 		 *  32107654 BA98
 		 *
 		 *  where t=temperature data, and a seems to change every power cycle
-		 *  The nibbles are swapped and temperatue is stored in fahrenheit + 90
+		 *  The nibbles are swapped and temperature is stored in fahrenheit + 90
+		 *
+		 *  If the temperature is invalid (sensor removed) the packet looks like this:
+		 * %11001100 11000000 00101100 11101101 0001
 		 */
 		/**
 		 * @return The temperature in Fahrenheit from the Rubiscon barbecue thermometer.
@@ -47,6 +52,12 @@ public interface TemperatureSensor extends Closeable {
 		public int getTemperatureInCelsius() {
 			int fahrenheit = getTemperatureInFahrenheit();
 			return ((fahrenheit - 32) * 5) / 9;
+		}
+
+		public boolean isValid() {
+			int celsius = getTemperatureInCelsius();
+			return (celsius <= MAX_VALID_TEMPERATURE_IN_CELSIUS) &&
+					(celsius >= MIN_VALID_TEMPERATURE_IN_CELSIUS);
 		}
 
 		/**
@@ -78,9 +89,6 @@ public interface TemperatureSensor extends Closeable {
 		//	System.out.print(" ");
 		//}
 	}
-
-	public int getEventCount();
-	public TemperatureEvent readEvent() throws ConnectionLostException, InterruptedException;
 
 	public interface EventCallback {
 		public void notifyEvent(TemperatureEvent temperatureEvent);
